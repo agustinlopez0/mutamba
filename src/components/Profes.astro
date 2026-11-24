@@ -1,0 +1,153 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from './Icon.astro';
+import { contacto, profes, igLink } from '../data/site';
+
+const fotos = import.meta.glob<{ default: ImageMetadata }>('../assets/profes/*.webp', { eager: true });
+const fotoDe = (nombre: string | null) => (nombre ? fotos[`../assets/profes/${nombre}.webp`]?.default : undefined);
+const inicial = (n: string) => n.split(' ').slice(-1)[0].slice(0, 1);
+---
+
+<section class="section profes" id="profes">
+  <div class="container">
+    <div data-reveal>
+      <h2 class="section-title">Profes</h2>
+      <p class="section-lead">
+        Mutamba Rosario es parte de <a href={contacto.webGrupo} target="_blank" rel="noopener">Capoeira Mutamba</a>,
+        el grupo de Mestre Javali, que tiene escuelas en Washington D.C. y Virginia (Estados Unidos), Lima, Asunción,
+        Buenos Aires y Rosario.
+      </p>
+    </div>
+
+    <ul class="profes__grid">
+      {
+        profes.map((p) => {
+          const foto = fotoDe(p.foto);
+          return (
+            <li class="profe" data-reveal>
+              {foto ? (
+                <Image src={foto} alt={p.nombre} width={128} densities={[1, 2]} format="webp" class="profe__foto" />
+              ) : (
+                <span class="profe__foto profe__foto--inicial" aria-hidden="true">
+                  {inicial(p.nombre)}
+                </span>
+              )}
+              <div class="profe__body">
+                <span class="profe__rol">{p.rol}</span>
+                <h3>{p.nombre}</h3>
+                {p.texto && <p>{p.texto}</p>}
+                <a href={igLink(p.instagram)} target="_blank" rel="noopener">
+                  <Icon name="instagram" />@{p.instagram}
+                </a>
+              </div>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .section-lead a {
+    font-weight: 700;
+    color: var(--ink);
+    text-underline-offset: 3px;
+  }
+  .profes__grid {
+    list-style: none;
+    padding: 0;
+    margin: 48px 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+  .profe {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding-top: 28px;
+    border-top: 2px solid var(--ink);
+  }
+  .profe :global(.profe__foto) {
+    flex: none;
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 20%;
+    background: #fff;
+  }
+  .profe__foto--inicial {
+    display: grid;
+    place-items: center;
+    background: var(--ink) !important;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 3.25rem;
+    line-height: 1;
+  }
+  .profe__rol {
+    display: block;
+    line-height: 1.35;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .profe h3 {
+    font-size: 1.85rem;
+    margin-top: 4px;
+  }
+  .profe p {
+    margin-top: 8px;
+    color: var(--ink-2);
+    font-size: 0.975rem;
+  }
+  .profe a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: var(--red-deep);
+  }
+  .profe a:hover {
+    text-decoration: underline;
+  }
+  .profe a :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* celular y tablet: lista con la foto a la izquierda */
+  @media (max-width: 860px) {
+    .profes__grid {
+      grid-template-columns: 1fr;
+      gap: 0;
+      border-top: 2px solid var(--ink);
+    }
+    .profe {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 20px;
+      padding-block: 24px;
+      border-top: 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .profe :global(.profe__foto) {
+      width: 84px;
+      height: 84px;
+    }
+    .profe__foto--inicial {
+      font-size: 2.25rem;
+    }
+    .profe h3 {
+      font-size: 1.6rem;
+    }
+  }
+</style>

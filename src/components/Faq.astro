@@ -1,0 +1,189 @@
+---
+import Icon from './Icon.astro';
+import { faqs, waLink } from '../data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+// Dos columnas independientes: al abrir una pregunta solo se corre su columna.
+const mitad = Math.ceil(faqs.length / 2);
+const columnas = [faqs.slice(0, mitad), faqs.slice(mitad)];
+---
+
+<section class="section faq" id="preguntas">
+  <div class="container">
+    <div class="faq__head" data-reveal>
+      <h2 class="section-title">Preguntas frecuentes</h2>
+      <p>¿Tenés otra duda? <a href={waLink('general')} target="_blank" rel="noopener">Escribinos por WhatsApp</a>.</p>
+    </div>
+
+    <div class="faq__cols" data-reveal>
+      {
+        columnas.map((col) => (
+          <div class="faq__col">
+            {col.map((f) => (
+              <details>
+                <summary>
+                  <span>{f.q}</span>
+                  <span class="faq__icono" aria-hidden="true">
+                    <Icon name="plus" />
+                  </span>
+                </summary>
+                <div class="faq__respuesta">
+                  <p>{f.a}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</section>
+
+<style>
+  .faq__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px 40px;
+  }
+  .faq__head p {
+    padding-bottom: 8px;
+    color: var(--ink-2);
+  }
+  .faq__head a {
+    font-weight: 700;
+    color: var(--ink);
+    text-underline-offset: 3px;
+  }
+  .faq__head a:hover {
+    color: var(--red-deep);
+  }
+  .faq__cols {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(32px, 5vw, 72px);
+    align-items: start;
+    border-top: 2px solid var(--ink);
+  }
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+  details.is-animando {
+    overflow: hidden;
+  }
+  summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    list-style: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary:hover {
+    color: var(--red-deep);
+  }
+  .faq__icono {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--paper-2);
+    color: var(--red);
+    transition:
+      transform 0.4s var(--ease-out),
+      background-color 0.25s ease,
+      color 0.25s ease;
+  }
+  .faq__icono :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+  details[open]:not(.is-cerrando) .faq__icono {
+    transform: rotate(45deg);
+    background: var(--red);
+    color: #fff;
+  }
+  .faq__respuesta p {
+    padding: 0 48px 22px 0;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 860px) {
+    .faq__cols {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  // Abre y cierra las preguntas con una animación de altura. Sin JS (o con movimiento reducido)
+  // funcionan igual, con el comportamiento nativo de <details>.
+  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLDetailsElement>('.faq details').forEach((item) => {
+    const pregunta = item.querySelector('summary')!;
+    const respuesta = item.querySelector<HTMLElement>('.faq__respuesta')!;
+    let anim: Animation | null = null;
+
+    pregunta.addEventListener('click', (e) => {
+      if (reducir.matches) return;
+      e.preventDefault();
+
+      const abrir = !item.open || item.classList.contains('is-cerrando');
+      const desde = item.offsetHeight;
+      if (anim) {
+        anim.onfinish = null;
+        anim.cancel();
+      }
+      item.classList.add('is-animando');
+
+      if (abrir) {
+        item.classList.remove('is-cerrando');
+        item.open = true;
+        const hasta = item.offsetHeight;
+        anim = item.animate({ height: [`${desde}px`, `${hasta}px`] }, { duration: 380, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+        respuesta.animate(
+          { opacity: [0, 1], transform: ['translateY(-8px)', 'none'] },
+          { duration: 380, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+        );
+      } else {
+        item.classList.add('is-cerrando');
+        const bordes = item.offsetHeight - item.clientHeight;
+        const hasta = pregunta.offsetHeight + bordes;
+        anim = item.animate({ height: [`${desde}px`, `${hasta}px`] }, { duration: 280, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' });
+        respuesta.animate({ opacity: [1, 0] }, { duration: 280, easing: 'ease-out' });
+      }
+
+      anim.onfinish = () => {
+        if (!abrir) {
+          item.open = false;
+          item.classList.remove('is-cerrando');
+        }
+        item.classList.remove('is-animando');
+        anim = null;
+      };
+    });
+  });
+</script>

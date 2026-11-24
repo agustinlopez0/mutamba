@@ -1,0 +1,171 @@
+---
+import Foto from './Foto.astro';
+
+// Primera fila: movimientos. Segunda: música y cultura.
+const glosario = [
+  ['Ginga', 'El movimiento base, un balanceo de un lado al otro desde el que salen los ataques y las esquivas.'],
+  ['Esquiva', 'El movimiento para salir del ataque del otro, agachándose o corriéndose.'],
+  ['Aú', 'Lo que acá llamamos medialuna.'],
+  ['Meia-lua', 'Una patada circular. No confundir con la medialuna, que en capoeira es el aú.'],
+  ['Berimbau', 'Arco de madera con un alambre y una calabaza. Es el instrumento que marca el juego.'],
+  ['Axé', 'Buena energía. Se dice para saludar, para agradecer o para desearle algo bueno a alguien.'],
+  ['Apelido', 'El apodo de capoeira. Javali, Congo y Queixada son apelidos.'],
+  ['Mestre', 'El grado más alto en capoeira.'],
+] as const;
+---
+
+<section class="section capoeira" id="capoeira">
+  <div class="container">
+    <div class="capoeira__fila">
+      <div class="capoeira__texto" data-reveal>
+        <h2 class="section-title">¿Qué es la capoeira?</h2>
+        <p>
+          La capoeira nació en Brasil, entre los africanos esclavizados y sus descendientes. Tiene movimientos de lucha
+          y acrobacias, se practica con música y se juega de a dos, dentro de una ronda que se llama roda.
+        </p>
+        <p>
+          Estuvo prohibida por ley a fines del siglo XIX. En las décadas del 30 y del 40, Mestre Bimba y Mestre
+          Pastinha abrieron academias en Salvador de Bahía y la capoeira empezó a enseñarse abiertamente. Hoy se
+          practica en todo el mundo, y en 2014 la UNESCO declaró la roda de capoeira Patrimonio Cultural Inmaterial de
+          la Humanidad.
+        </p>
+      </div>
+      <div class="capoeira__media" data-reveal>
+        <Foto
+          nombre="roda-circulo"
+          alt="La roda vista desde arriba: el grupo en círculo alrededor de dos jugadores"
+          sizes="(max-width: 880px) 100vw, 560px"
+          widths={[480, 800, 1120]}
+          class="capoeira__img"
+        />
+      </div>
+    </div>
+
+    <div class="capoeira__fila capoeira__fila--invertida">
+      <div class="capoeira__texto" data-reveal>
+        <h3>La roda</h3>
+        <p>
+          Los que no están jugando forman la ronda: tocan los instrumentos (berimbau, pandeiro y atabaque), cantan y
+          hacen palmas. Las canciones son en portugués; uno canta y el resto responde el coro. El berimbau es el
+          instrumento principal, y según el toque el juego es más lento y cerca del piso o más rápido.
+        </p>
+        <p>
+          En el centro juegan dos capoeiristas: los dos atacan y esquivan, sin buscar pegarse. Por eso en capoeira se
+          habla de jugar (jogar).
+        </p>
+      </div>
+      <div class="capoeira__media" data-reveal>
+        <Foto
+          nombre="bateria-berimbau"
+          alt="Profesores tocando berimbau y cantando frente a la roda"
+          sizes="(max-width: 880px) 100vw, 560px"
+          widths={[480, 800, 1120]}
+          class="capoeira__img capoeira__img--bateria"
+        />
+      </div>
+    </div>
+
+    <div class="glosario" data-reveal>
+      <h3>Algunas palabras que vas a escuchar</h3>
+      <dl>
+        {
+          glosario.map(([t, d]) => (
+            <div>
+              <dt>{t}</dt>
+              <dd>{d}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .capoeira {
+    background: var(--paper-2);
+  }
+  .capoeira__fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: center;
+  }
+  .capoeira__fila + .capoeira__fila {
+    margin-top: clamp(56px, 8vw, 96px);
+  }
+  .capoeira__fila--invertida .capoeira__media {
+    order: -1;
+  }
+  .capoeira__texto {
+    max-width: 62ch;
+  }
+  .capoeira__texto p {
+    margin-top: 16px;
+    font-size: 1.0625rem;
+    color: var(--ink-2);
+  }
+  .capoeira__texto .section-title + p,
+  .capoeira__texto h3 + p {
+    margin-top: 22px;
+  }
+  .capoeira__texto h3,
+  .glosario h3 {
+    font-size: clamp(1.75rem, 3.2vw, 2.4rem);
+  }
+  .capoeira__media :global(.capoeira__img) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+  .capoeira__media :global(.capoeira__img--bateria) {
+    aspect-ratio: 3 / 2;
+  }
+
+  .glosario {
+    margin-top: clamp(64px, 9vw, 112px);
+  }
+  .glosario dl {
+    margin: 20px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 28px;
+    border-top: 2px solid var(--ink);
+  }
+  .glosario dl > div {
+    padding: 16px 0 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .glosario dt {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 1.25rem;
+    color: var(--red);
+  }
+  .glosario dd {
+    margin: 2px 0 0;
+    font-size: 0.95rem;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 1000px) {
+    .glosario dl {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 880px) {
+    .capoeira__fila {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+    .capoeira__fila--invertida .capoeira__media {
+      order: 0;
+    }
+  }
+  @media (max-width: 560px) {
+    .glosario dl {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

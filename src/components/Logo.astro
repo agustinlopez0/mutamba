@@ -1,0 +1,25 @@
+---
+// Logo oficial de Capoeira Mutamba, vectorizado a partir de capoeiramutamba.com/img/logos/mutamba-logo-slim.jpg.
+// 'light' = para fondos oscuros (textos en blanco, rojos un poco más claros); 'dark' = para fondos claros.
+import logoOscuro from '../assets/marca/logo-mutamba.svg?url';
+import logoClaro from '../assets/marca/logo-mutamba-claro.svg?url';
+
+interface Props {
+  tone?: 'light' | 'dark';
+  width?: number;
+  class?: string;
+  priority?: boolean;
+}
+const { tone = 'light', width = 150, class: className, priority = false } = Astro.props;
+const PROPORCION = 980 / 2796; // alto / ancho del viewBox
+---
+
+<img
+  src={tone === 'light' ? logoClaro : logoOscuro}
+  alt="Capoeira Mutamba · Mestre Javalí"
+  width={width}
+  height={Math.round(width * PROPORCION)}
+  class={className}
+  loading={priority ? 'eager' : 'lazy'}
+  decoding="async"
+/>

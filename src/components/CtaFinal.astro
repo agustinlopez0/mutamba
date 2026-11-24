@@ -1,0 +1,77 @@
+---
+import Foto from './Foto.astro';
+import Icon from './Icon.astro';
+import { contacto, igLink, waLink } from '../data/site';
+---
+
+<section class="contacto" id="contacto">
+  <Foto
+    nombre="grupo-batizado-2026"
+    alt="Todo el grupo Mutamba Rosario reunido frente al banner del grupo"
+    sizes="100vw"
+    widths={[640, 1024, 1600]}
+    class="contacto__img"
+  />
+  <div class="contacto__shade" aria-hidden="true"></div>
+  <div class="container contacto__content" data-reveal>
+    <h2 class="section-title">Contacto</h2>
+    <p>Para consultas sobre las clases, escribinos por WhatsApp o por Instagram.</p>
+    <div class="contacto__actions">
+      <a class="btn btn--wa" href={waLink('general')} target="_blank" rel="noopener">
+        <Icon name="whatsapp" />
+        {contacto.telefonoVisible}
+      </a>
+      <a class="btn btn--ghost" href={igLink()} target="_blank" rel="noopener">
+        <Icon name="instagram" />
+        @{contacto.instagram}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contacto {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    background: var(--night);
+    overflow: hidden;
+  }
+  .contacto :global(picture) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+  .contacto :global(.contacto__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+  }
+  .contacto__shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(100deg, rgb(18 16 16 / 0.92) 0%, rgb(18 16 16 / 0.78) 50%, rgb(18 16 16 / 0.45) 100%);
+  }
+  .contacto__content {
+    padding-block: clamp(72px, 11vw, 128px);
+  }
+  .contacto p {
+    margin-top: 16px;
+    font-size: 1.125rem;
+    max-width: 44ch;
+    color: rgb(255 255 255 / 0.88);
+  }
+  .contacto__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  @media (max-width: 560px) {
+    .contacto__actions .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

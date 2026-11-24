@@ -1,0 +1,105 @@
+---
+import Foto from './Foto.astro';
+import Icon from './Icon.astro';
+import { sedes, videos } from '../data/site';
+---
+
+<section class="section mayores" id="adultos-mayores">
+  <div class="container mayores__grid">
+    <div class="mayores__media" data-reveal>
+      <Foto
+        nombre="troca-cordas-adultos-mayores"
+        alt="Alumna del grupo de adultos mayores junto a su profesor y compañeros"
+        sizes="(max-width: 900px) 100vw, 45vw"
+        class="mayores__img"
+      />
+    </div>
+
+    <div class="mayores__texto" data-reveal>
+      <h2 class="section-title">Adultos mayores</h2>
+      <p>
+        El grupo de adultos mayores entrena los martes y jueves a las 11 en {sedes.mendoza.direccion}. En Instagram
+        subimos algunos videos de las alumnas. Esther tiene 90 años: marca el ritmo con el pandeiro y después entra a
+        jugar.
+      </p>
+
+      <ul class="mayores__videos">
+        {
+          videos.map((v) => (
+            <li>
+              <a href={v.post} target="_blank" rel="noopener">
+                <span>
+                  {v.nombre}, {v.edad} años
+                </span>
+                <span class="mayores__ver">
+                  Ver video <Icon name="arrow" />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .mayores__grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: clamp(32px, 6vw, 80px);
+    align-items: center;
+  }
+  .mayores__media :global(.mayores__img) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+  .mayores__texto {
+    max-width: 58ch;
+  }
+  .mayores__texto p {
+    margin-top: 18px;
+    font-size: 1.0625rem;
+    color: var(--ink-2);
+  }
+  .mayores__texto .section-title + p {
+    margin-top: 24px;
+  }
+  .mayores__videos {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 0;
+    border-top: 1px solid var(--line);
+  }
+  .mayores__videos a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .mayores__ver {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--red-deep);
+  }
+  .mayores__ver :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+  .mayores__videos a:hover .mayores__ver {
+    text-decoration: underline;
+  }
+  @media (max-width: 900px) {
+    .mayores__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

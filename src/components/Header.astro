@@ -1,0 +1,228 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { waLink } from '../data/site';
+
+const links = [
+  { href: '#clases', label: 'Clases' },
+  { href: '#profes', label: 'Profes' },
+  { href: '#capoeira', label: 'La capoeira' },
+  { href: '#encuentro', label: 'Batizado' },
+  { href: '#sedes', label: 'Sedes' },
+  { href: '#preguntas', label: 'Preguntas' },
+];
+---
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a href="#top" class="header__logo" aria-label="Mutamba Capoeira Rosario, ir al inicio">
+      <Logo width={150} priority />
+      <span class="header__sede">Rosario</span>
+    </a>
+
+    <nav class="header__nav" id="menu" aria-label="Principal" data-menu>
+      <ul>
+        {
+          links.map((l, i) => (
+            <li style={`--i: ${i}`}>
+              <a href={l.href}>{l.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+      <a
+        class="btn btn--wa btn--sm header__cta"
+        style={`--i: ${links.length}`}
+        href={waLink('general')}
+        target="_blank"
+        rel="noopener"
+      >
+        <Icon name="whatsapp" />
+        WhatsApp
+      </a>
+    </nav>
+
+    <button class="header__toggle" type="button" aria-expanded="false" aria-controls="menu" data-toggle>
+      <span class="visually-hidden">Abrir menú</span>
+      <span class="bars" aria-hidden="true"><span></span><span></span></span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    height: var(--header-h);
+    color: #fff;
+    transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .header.is-solid,
+  .header.is-open {
+    background: rgb(18 16 16 / 0.96);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.06);
+    backdrop-filter: blur(8px);
+  }
+  .header__inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .header__logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .header__logo :global(img) {
+    height: auto;
+  }
+  .header__sede {
+    padding-left: 12px;
+    border-left: 1px solid rgb(255 255 255 / 0.25);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.8);
+  }
+  .header__nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .header__nav ul {
+    display: flex;
+    gap: 26px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .header__nav ul a {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    opacity: 0.88;
+  }
+  .header__nav ul a:hover {
+    opacity: 1;
+    color: #ff6a5e;
+  }
+  .header__toggle {
+    display: none;
+  }
+
+  @media (max-width: 1040px) {
+    .header__toggle {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 12px;
+      background: rgb(255 255 255 / 0.1);
+      color: #fff;
+      cursor: pointer;
+    }
+    .bars {
+      display: grid;
+      gap: 6px;
+      width: 20px;
+    }
+    .bars span {
+      height: 2px;
+      background: currentColor;
+      border-radius: 2px;
+      transition: transform 0.2s ease;
+    }
+    .is-open .bars span:first-child {
+      transform: translateY(4px) rotate(45deg);
+    }
+    .is-open .bars span:last-child {
+      transform: translateY(-4px) rotate(-45deg);
+    }
+    .header__nav {
+      position: fixed;
+      inset: var(--header-h) 0 auto;
+      height: calc(100dvh - var(--header-h));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 20px;
+      padding: 12px var(--gutter) 28px;
+      background: var(--night);
+      transform: translateY(-8px);
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s;
+    }
+    .is-open .header__nav {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+    .header__nav ul {
+      flex-direction: column;
+      gap: 0;
+    }
+    .header__nav ul a {
+      display: block;
+      padding: 14px 0;
+      font-size: 1.25rem;
+      border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    }
+    .header__cta {
+      min-height: 52px;
+    }
+    /* los ítems del menú aparecen de a uno */
+    .header__nav li,
+    .header__cta {
+      opacity: 0;
+      transform: translateY(-8px);
+      transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+    }
+    .is-open .header__nav li,
+    .is-open .header__cta {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity 0.45s var(--ease-out),
+        transform 0.45s var(--ease-out);
+      transition-delay: calc(60ms + var(--i, 0) * 40ms);
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]')!;
+  const toggle = header.querySelector<HTMLButtonElement>('[data-toggle]')!;
+  const menu = header.querySelector<HTMLElement>('[data-menu]')!;
+
+  const onScroll = () => header.classList.toggle('is-solid', window.scrollY > 40);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  const setOpen = (open: boolean) => {
+    header.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.querySelector('.visually-hidden')!.textContent = open ? 'Cerrar menú' : 'Abrir menú';
+  };
+  toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
+  menu.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+</script>

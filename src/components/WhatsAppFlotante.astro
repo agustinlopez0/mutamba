@@ -1,0 +1,56 @@
+---
+import Icon from './Icon.astro';
+import { waLink } from '../data/site';
+---
+
+<a class="wa-float" href={waLink('general')} target="_blank" rel="noopener" aria-label="WhatsApp" data-wa-float>
+  <Icon name="whatsapp" />
+</a>
+
+<style>
+  .wa-float {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    background: var(--wa);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+    transform: translateY(120px);
+    transition:
+      transform 0.3s ease,
+      background-color 0.15s ease;
+  }
+  .wa-float.is-visible {
+    transform: none;
+  }
+  .wa-float:hover {
+    background: #188f47;
+  }
+  .wa-float :global(svg) {
+    width: 28px;
+    height: 28px;
+  }
+</style>
+
+<script>
+  // Aparece cuando el hero ya no está a la vista, para no duplicar el CTA principal.
+  const btn = document.querySelector<HTMLElement>('[data-wa-float]')!;
+  const hero = document.getElementById('top');
+  if (hero && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => btn.classList.toggle('is-visible', !e.isIntersecting), {
+      threshold: 0.15,
+    }).observe(hero);
+  } else {
+    btn.classList.add('is-visible');
+  }
+</script>

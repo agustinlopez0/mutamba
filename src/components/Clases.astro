@@ -1,0 +1,135 @@
+---
+import Foto from './Foto.astro';
+import Icon from './Icon.astro';
+import { clases, sedes, waLink, mapsLink } from '../data/site';
+
+// Que una hora no se corte entre renglones: "de 20 a 21 hs", "a las 10 hs".
+const sinCortes = (texto: string) =>
+  texto.replace(/(?:de|a las) \d+(?: a \d+)? hs/g, (hora) => hora.replaceAll(' ', '\u00a0'));
+---
+
+<section class="section clases" id="clases">
+  <div class="container">
+    <h2 class="section-title" data-reveal>Clases y horarios</h2>
+
+    <ul class="clases__lista">
+      {
+        clases.map((c) => (
+          <li class="clase" id={`clase-${c.id}`} data-reveal>
+            <div class="clase__foto">
+              <Foto
+                nombre={c.foto}
+                alt={c.fotoAlt}
+                sizes="(max-width: 720px) 100vw, 380px"
+                widths={[480, 760, 960]}
+                class={`clase__img clase__img--${c.id}`}
+              />
+            </div>
+            <div class="clase__texto">
+              <h3>{c.titulo}</h3>
+              <p class="clase__horario">{sinCortes(c.horario)}</p>
+              <a class="clase__sede" href={mapsLink(c.sede)} target="_blank" rel="noopener">
+                <Icon name="pin" />
+                {sedes[c.sede].direccion}
+              </a>
+              <p class="clase__desc">{c.descripcion}</p>
+              <a class="clase__wa" href={waLink(c.whatsapp)} target="_blank" rel="noopener">
+                <Icon name="whatsapp" />
+                Consultar por WhatsApp
+              </a>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .clases {
+    background: var(--paper-2);
+  }
+  .clases__lista {
+    list-style: none;
+    margin: 40px 0 0;
+    padding: 0;
+    border-top: 2px solid var(--ink);
+  }
+  .clase {
+    display: grid;
+    grid-template-columns: clamp(220px, 34%, 380px) minmax(0, 1fr);
+    gap: clamp(24px, 4.5vw, 64px);
+    align-items: center;
+    padding-block: clamp(28px, 4vw, 44px);
+    border-bottom: 1px solid var(--line);
+  }
+  .clase__foto :global(picture) {
+    display: block;
+  }
+  .clase__foto :global(.clase__img) {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+  /* foto vertical: que entren las caras */
+  .clase__foto :global(.clase__img--mayores) {
+    object-position: center 22%;
+  }
+
+  .clase__texto h3 {
+    font-size: clamp(2.1rem, 3.6vw, 2.9rem);
+  }
+  .clase__horario {
+    margin-top: 12px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .clase__sede {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    color: var(--ink-2);
+    text-underline-offset: 3px;
+  }
+  .clase__sede :global(svg) {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    color: var(--red);
+  }
+  .clase__desc {
+    margin-top: 16px;
+    max-width: 56ch;
+    color: var(--ink-2);
+  }
+  .clase__wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    font-weight: 700;
+    color: #157a3d;
+    text-decoration: none;
+  }
+  .clase__wa:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .clase__wa :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 720px) {
+    .clase {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .clase__foto :global(.clase__img) {
+      aspect-ratio: 3 / 2;
+    }
+  }
+</style>

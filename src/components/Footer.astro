@@ -1,0 +1,144 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { contacto, igLink, waLink, sedes, mapsLink } from '../data/site';
+import type { SedeId } from '../data/site';
+import lambdaworks from '../assets/marca/lambdaworks.png?url';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <Logo width={200} />
+      <p>Clases de capoeira para chicos, adultos y adultos mayores en Rosario, Santa Fe.</p>
+    </div>
+
+    <div>
+      <h2>Sedes</h2>
+      <ul>
+        {
+          (Object.keys(sedes) as SedeId[]).map((id) => (
+            <li>
+              <a href={mapsLink(id)} target="_blank" rel="noopener">
+                <Icon name="pin" />
+                {sedes[id].direccion}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h2>Contacto</h2>
+      <ul>
+        <li>
+          <a href={waLink('general')} target="_blank" rel="noopener"><Icon name="whatsapp" />{contacto.telefonoVisible}</a>
+        </li>
+        <li>
+          <a href={igLink()} target="_blank" rel="noopener"><Icon name="instagram" />@{contacto.instagram}</a>
+        </li>
+        <li>
+          <a href={igLink(contacto.instagramGrupo)} target="_blank" rel="noopener">
+            <Icon name="instagram" />Capoeira Mutamba (grupo)
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="container">
+    <div class="footer__bottom">
+      <p>© {year} Mutamba Capoeira Rosario · Grupo Capoeira Mutamba · Mestre Javali</p>
+      <a class="footer__credito" href="https://lambdaworks.ar" target="_blank" rel="noopener">
+        Desarrollado por
+        <img src={lambdaworks} alt="LambdaWorks" width="128" height="19" loading="lazy" decoding="async" />
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--night);
+    color: rgb(255 255 255 / 0.8);
+    padding-top: 64px;
+    padding-bottom: 96px;
+  }
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 40px;
+  }
+  .footer__brand p {
+    margin-top: 16px;
+    max-width: 36ch;
+    font-size: 0.95rem;
+  }
+  .footer h2 {
+    font-size: 1.1rem;
+    color: #fff;
+    letter-spacing: 0.04em;
+  }
+  .footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: grid;
+    gap: 10px;
+  }
+  .footer a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  .footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+  .footer a :global(svg) {
+    width: 18px;
+    height: 18px;
+    color: var(--red);
+  }
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px 32px;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.55);
+  }
+  .footer .footer__credito {
+    gap: 10px;
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.7);
+    transition: color 0.2s ease;
+  }
+  .footer__credito img {
+    display: block;
+    height: 19px;
+    width: auto;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+  }
+  .footer .footer__credito:hover {
+    color: #fff;
+    text-decoration: none;
+  }
+  .footer__credito:hover img {
+    opacity: 1;
+  }
+  @media (max-width: 760px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

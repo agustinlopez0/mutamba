@@ -1,0 +1,845 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Foto from './Foto.astro';
+import Icon from './Icon.astro';
+import { actividades, contacto, encuentro, igLink } from '../data/site';
+
+// La primera foto va grande. En celular la galería se desliza de costado.
+const galeria = [
+  { nombre: 'roda-mortal', alt: 'Un capoeirista hace una acrobacia invertida en la roda' },
+  { nombre: 'grupo-batizado-2026', alt: 'Foto grupal de Mutamba Rosario con los invitados al cierre del batizado 2026' },
+  { nombre: 'batizado-infantil', alt: 'Un profesor le ata la corda a una alumna durante el batizado' },
+  { nombre: 'roda-salto', alt: 'Salto acrobático en la roda frente al grupo' },
+  { nombre: 'esther-roda', alt: 'Alumna del grupo de adultos mayores en la roda del batizado' },
+  { nombre: 'estrella', alt: 'Un aú en el centro de la roda' },
+  { nombre: 'juego-adultos-mayores', alt: 'Un profesor juega con una alumna del grupo de adultos mayores' },
+  { nombre: 'roda-armada', alt: 'Dos capoeiristas en pleno juego aéreo' },
+  { nombre: 'celebracion', alt: 'Festejo del grupo después del batizado' },
+];
+
+const fotos = import.meta.glob<{ default: ImageMetadata }>('../assets/fotos/*.jpg', { eager: true });
+// Versión grande de cada foto para el visor, con sus medidas (el visor reserva el tamaño final de entrada).
+const grandes = await Promise.all(
+  galeria.map(async (g) => {
+    const src = fotos[`../assets/fotos/${g.nombre}.jpg`].default;
+    const w = Math.min(1800, src.width);
+    const h = Math.round((src.height * w) / src.width);
+    const img = await getImage({ src, width: w, format: 'webp', quality: 78 });
+    return { src: img.src, w, h };
+  }),
+);
+
+const proximo = encuentro.estado === 'proximo';
+const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
+
+---
+
+<section class="section encuentro" id="encuentro">
+  <div class="container">
+    <header class="encuentro__head" data-reveal>
+      <h2 class="section-title">Batizado y troca de cordas</h2>
+      <p class="section-lead">
+        Una vez por año hacemos un encuentro con invitados de otros grupos. Hay talleres y rodas abiertas, y se hace
+        el batizado y la troca de cordas de la escuela.
+      </p>
+    </header>
+
+    <div class="edicion" data-reveal>
+      <div class="edicion__main">
+        <span class="edicion__tag">{proximo ? 'Próxima edición' : 'Última edición'}</span>
+        <h3>{nombreEdicion}</h3>
+        <p class="edicion__fecha">
+          <Icon name="calendar" />
+          {encuentro.fechas} · {encuentro.lugar}
+        </p>
+
+        <div class="crono">
+          {
+            encuentro.programa.map((d) => (
+              <div class="crono__dia">
+                <h4>{d.dia}</h4>
+                <ul>
+                  {d.items.map(([hora, que]) => (
+                    <li>
+                      <span>{hora}</span>
+                      {que}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+
+        {
+          proximo && (
+            <a class="btn btn--red edicion__cta" href={encuentro.inscripcion} target="_blank" rel="noopener">
+              Formulario de inscripción
+              <Icon name="arrow" />
+            </a>
+          )
+        }
+      </div>
+
+      <div class="edicion__invitados">
+        <h4>Invitados</h4>
+        <ul>
+          {
+            encuentro.invitados.map((inv) => (
+              <li>
+                <strong>{inv.nombre}</strong>
+                {inv.grupo && <span>{inv.grupo}</span>}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <ul class="galeria" aria-label={`Fotos de ${nombreEdicion}`} data-reveal>
+      {
+        galeria.map((g, i) => (
+          <li class="galeria__item" style={`--i: ${i}`}>
+            <button
+              type="button"
+              data-full={grandes[i].src}
+              data-w={grandes[i].w}
+              data-h={grandes[i].h}
+              data-alt={g.alt}
+              aria-label={`Ampliar foto: ${g.alt}`}
+            >
+              <Foto
+                nombre={g.nombre}
+                alt={g.alt}
+                sizes={i === 0 ? '(max-width: 700px) 80vw, 560px' : '(max-width: 700px) 80vw, 280px'}
+                widths={i === 0 ? [600, 900, 1200] : [360, 600]}
+                class="galeria__img"
+              />
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="anio">
+      <div class="anio__lista" data-reveal>
+        <h3>Durante el año</h3>
+        <ul>
+          {
+            actividades.map((a) => (
+              <li>
+                <span>{a.fecha}</span>
+                <div>
+                  <strong>{a.titulo}</strong>
+                  <p>{a.texto}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="anio__cta" data-reveal>
+        {
+          proximo ? (
+            <>
+              <h3>Inscripción</h3>
+              <p>Para participar hay que anotarse en el formulario.</p>
+              <div class="anio__actions">
+                <a class="btn btn--red" href={encuentro.inscripcion} target="_blank" rel="noopener">
+                  Formulario de inscripción
+                  <Icon name="arrow" />
+                </a>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3>Próxima edición</h3>
+              <p>La fecha la vamos a publicar en Instagram.</p>
+              <div class="anio__actions">
+                <a class="btn btn--ghost" href={igLink()} target="_blank" rel="noopener">
+                  <Icon name="instagram" />
+                  @{contacto.instagram}
+                </a>
+              </div>
+            </>
+          )
+        }
+      </div>
+    </div>
+  </div>
+
+  <dialog class="visor" data-visor aria-label={`Fotos de ${nombreEdicion}`}>
+    <div class="visor__fondo" data-fondo></div>
+    <div class="visor__escena" data-escena>
+      <img alt="" data-visor-img draggable="false" />
+    </div>
+    <p class="visor__contador visor__ctrl" data-contador aria-live="polite"></p>
+    <button type="button" class="visor__close visor__ctrl" data-close aria-label="Cerrar">
+      <Icon name="close" />
+    </button>
+    <button type="button" class="visor__nav visor__nav--prev visor__ctrl" data-prev aria-label="Foto anterior">
+      <Icon name="arrow" />
+    </button>
+    <button type="button" class="visor__nav visor__nav--next visor__ctrl" data-next aria-label="Foto siguiente">
+      <Icon name="arrow" />
+    </button>
+  </dialog>
+</section>
+
+<style>
+  .encuentro {
+    background: var(--night);
+    color: #fff;
+  }
+  .encuentro__head {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 24px 64px;
+    align-items: end;
+  }
+  .encuentro__head .section-title {
+    margin: 0;
+  }
+  .encuentro__head .section-lead {
+    color: rgb(255 255 255 / 0.78);
+  }
+  .encuentro__head strong {
+    color: #fff;
+  }
+
+  /* edición */
+  .edicion {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: #1d1a19;
+  }
+  .edicion__main {
+    padding: clamp(24px, 4vw, 40px);
+  }
+  .edicion__tag {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgb(224 40 27 / 0.18);
+    color: #ff8f86;
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+  .edicion h3 {
+    margin-top: 14px;
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+  }
+  .edicion__fecha {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    color: rgb(255 255 255 / 0.75);
+  }
+  .edicion__fecha :global(svg) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 0.2em;
+    color: var(--red);
+  }
+  .crono {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .crono h4,
+  .edicion__invitados h4 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: 1.25rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--red);
+  }
+  .crono ul {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: grid;
+    gap: 8px;
+  }
+  .crono li {
+    display: flex;
+    gap: 12px;
+    color: rgb(255 255 255 / 0.85);
+  }
+  .crono li span {
+    flex: none;
+    width: 46px;
+    font-weight: 700;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .edicion__cta {
+    margin-top: 28px;
+  }
+  .edicion__invitados {
+    padding: clamp(24px, 4vw, 40px);
+    background: #262120;
+  }
+  .edicion__invitados ul {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: grid;
+    gap: 2px;
+  }
+  .edicion__invitados li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+  .edicion__invitados li span {
+    color: rgb(255 255 255 / 0.6);
+    font-size: 0.9rem;
+    text-align: right;
+  }
+
+  /* galería */
+  .galeria {
+    list-style: none;
+    padding: 0;
+    margin: 28px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: clamp(140px, 17vw, 230px);
+    grid-auto-flow: dense;
+    gap: 10px;
+  }
+  .galeria__item button {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: #222;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+  .galeria__item :global(picture),
+  .galeria__item :global(.galeria__img) {
+    width: 100%;
+    height: 100%;
+  }
+  .galeria__item :global(.galeria__img) {
+    object-fit: cover;
+    transition:
+      transform 0.7s var(--ease-out),
+      filter 0.4s ease;
+  }
+  .galeria__item button:hover :global(.galeria__img),
+  .galeria__item button:focus-visible :global(.galeria__img) {
+    transform: scale(1.05);
+    filter: brightness(1.08);
+  }
+  .galeria__item:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  /* las fotos entran de a una cuando la galería aparece en pantalla */
+  :global(.js) .galeria[data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  :global(.js) .galeria[data-reveal] .galeria__item {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+    transition:
+      opacity 0.7s var(--ease-out),
+      transform 0.7s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 60ms);
+  }
+  :global(.js) .galeria[data-reveal].is-visible .galeria__item {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* durante el año */
+  .anio {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+  }
+  .anio h3 {
+    font-size: clamp(1.7rem, 3vw, 2.2rem);
+  }
+  .anio__cta p {
+    margin-top: 8px;
+    color: rgb(255 255 255 / 0.72);
+  }
+  .anio__lista ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 0;
+    display: grid;
+    gap: 16px;
+  }
+  .anio__lista li {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+  }
+  .anio__lista li > span {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #ff8f86;
+  }
+  .anio__lista li p {
+    margin-top: 2px;
+    font-size: 0.95rem;
+    color: rgb(255 255 255 / 0.7);
+  }
+  .anio__cta {
+    align-self: start;
+    padding: clamp(24px, 4vw, 32px);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgb(255 255 255 / 0.16);
+  }
+  .anio__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  /* visor */
+  :global(html:has(.visor[open])) {
+    overflow: hidden;
+  }
+  .visor {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    overflow: hidden;
+  }
+  .visor[open] {
+    display: block;
+  }
+  .visor::backdrop {
+    background: transparent;
+  }
+  .visor__fondo {
+    position: absolute;
+    inset: 0;
+    background: rgb(10 8 8 / 0.97);
+  }
+  .visor__escena {
+    position: absolute;
+    inset: 72px 84px;
+    display: grid;
+    place-items: center;
+    touch-action: pinch-zoom;
+  }
+  .visor__escena img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .visor__contador {
+    position: absolute;
+    top: 26px;
+    left: 24px;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    color: rgb(255 255 255 / 0.75);
+  }
+  .visor__close,
+  .visor__nav {
+    position: absolute;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 0;
+    background: rgb(255 255 255 / 0.12);
+    color: #fff;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      scale 0.2s ease;
+  }
+  .visor__close:hover,
+  .visor__nav:hover {
+    background: rgb(255 255 255 / 0.24);
+  }
+  .visor__close:active,
+  .visor__nav:active {
+    scale: 0.92;
+  }
+  .visor__close :global(svg),
+  .visor__nav :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+  .visor__close {
+    top: 14px;
+    right: 14px;
+  }
+  .visor__nav {
+    top: 50%;
+    translate: 0 -50%;
+  }
+  .visor__nav--prev {
+    left: 18px;
+    rotate: 180deg;
+  }
+  .visor__nav--next {
+    right: 18px;
+  }
+
+  @media (max-width: 900px) {
+    .encuentro__head,
+    .edicion,
+    .anio {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 700px) {
+    /* tira que se desliza de costado, de borde a borde */
+    .galeria {
+      display: flex;
+      gap: 8px;
+      margin-inline: calc(-1 * var(--gutter));
+      padding-inline: var(--gutter);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      scrollbar-width: none;
+    }
+    .galeria::-webkit-scrollbar {
+      display: none;
+    }
+    .galeria__item {
+      flex: 0 0 80%;
+      aspect-ratio: 4 / 3;
+      scroll-snap-align: start;
+    }
+    .crono {
+      grid-template-columns: 1fr;
+    }
+    .anio__lista li {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .visor__escena {
+      inset: 68px 0 96px;
+    }
+    .visor__escena img {
+      border-radius: 0;
+    }
+    .visor__nav {
+      top: auto;
+      bottom: 24px;
+      translate: none;
+    }
+    .visor__nav--prev {
+      left: calc(50% - 64px);
+    }
+    .visor__nav--next {
+      right: calc(50% - 64px);
+    }
+  }
+  /* columna de invitados angosta: el grupo va debajo del nombre */
+  @media (max-width: 520px), (min-width: 901px) and (max-width: 1100px) {
+    .edicion__invitados li {
+      flex-direction: column;
+      gap: 0;
+    }
+    .edicion__invitados li span {
+      text-align: left;
+    }
+  }
+</style>
+
+<script>
+  // Visor de fotos: la foto crece desde su miniatura y vuelve a ella al cerrar; entre fotos se desliza.
+  // En pantallas táctiles: deslizar de costado cambia de foto, deslizar hacia abajo cierra.
+  const visor = document.querySelector<HTMLDialogElement>('[data-visor]')!;
+  const img = visor.querySelector<HTMLImageElement>('[data-visor-img]')!;
+  const escena = visor.querySelector<HTMLElement>('[data-escena]')!;
+  const fondo = visor.querySelector<HTMLElement>('[data-fondo]')!;
+  const contador = visor.querySelector<HTMLElement>('[data-contador]')!;
+  const controles = [...visor.querySelectorAll<HTMLElement>('.visor__ctrl')];
+  const galeria = document.querySelector<HTMLElement>('.galeria')!;
+  const botones = [...galeria.querySelectorAll<HTMLButtonElement>('[data-full]')];
+  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const SUAVE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const total = botones.length;
+
+  let actual = 0;
+  let gen = 0; // cambia con cada apertura/cierre: corta animaciones que quedaron colgadas
+  let ocupado = false;
+  let arrastre = false; // el click que sigue a un gesto no tiene que cerrar el visor
+
+  const indice = (i: number) => (i + total) % total;
+  const absoluta = (src: string) => new URL(src, location.href).href;
+
+  // La foto ocupa el mayor tamaño posible dentro de la escena, sin importar qué versión esté cargada.
+  function ajustar() {
+    const b = botones[actual];
+    const w = Number(b.dataset.w);
+    const h = Number(b.dataset.h);
+    const caja = escena.getBoundingClientRect();
+    const s = Math.min(caja.width / w, caja.height / h);
+    img.style.width = `${Math.round(w * s)}px`;
+    img.style.height = `${Math.round(h * s)}px`;
+  }
+
+  // Muestra primero la miniatura (ya está cargada) y la cambia por la grande cuando termina de bajar.
+  async function poner(i: number) {
+    actual = indice(i);
+    const b = botones[actual];
+    const chica = b.querySelector('img')!;
+    const grande = absoluta(b.dataset.full!);
+    img.src = chica.complete && chica.currentSrc ? chica.currentSrc : grande;
+    img.alt = b.dataset.alt ?? '';
+    contador.textContent = `${actual + 1} / ${total}`;
+    if (visor.open) ajustar();
+    await img.decode().catch(() => {});
+    if (img.src !== grande) {
+      const esta = actual;
+      const pre = new Image();
+      pre.src = grande;
+      pre
+        .decode()
+        .then(() => {
+          if (actual === esta) img.src = grande;
+        })
+        .catch(() => {});
+    }
+    for (const j of [actual + 1, actual - 1]) new Image().src = botones[indice(j)].dataset.full!;
+  }
+
+  // Estado inicial de la foto para que calce con su miniatura (que es un recorte "cover").
+  function desdeMiniatura(mini: DOMRect, foto: DOMRect, radio: string): Keyframe[] {
+    const s = Math.max(mini.width / foto.width, mini.height / foto.height);
+    const dx = mini.left + mini.width / 2 - (foto.left + foto.width / 2);
+    const dy = mini.top + mini.height / 2 - (foto.top + foto.height / 2);
+    const ix = Math.max(0, (foto.width - mini.width / s) / 2);
+    const iy = Math.max(0, (foto.height - mini.height / s) / 2);
+    return [
+      { transform: `translate(${dx}px, ${dy}px) scale(${s})`, clipPath: `inset(${iy}px ${ix}px round ${12 / s}px)` },
+      { transform: 'none', clipPath: `inset(0px 0px round ${radio})` },
+    ];
+  }
+
+  const aLaVista = (r: DOMRect) => r.width > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+  const fundido = (el: Element, desde: number, hasta: number, ms: number, delay = 0) =>
+    el.animate({ opacity: [desde, hasta] }, { duration: ms, delay, easing: 'ease-out', fill: 'both' });
+  const limpiar = () => {
+    for (const el of [img, fondo, ...controles]) el.getAnimations().forEach((a) => a.cancel());
+    img.style.transform = '';
+    fondo.style.opacity = '';
+  };
+
+  async function abrir(i: number) {
+    if (visor.open) return;
+    const mio = ++gen;
+    await poner(i);
+    if (mio !== gen) return;
+    visor.showModal();
+    ajustar();
+    if (reducir.matches) return;
+
+    ocupado = true;
+    const radio = getComputedStyle(img).borderTopLeftRadius;
+    const pasos = desdeMiniatura(botones[actual].getBoundingClientRect(), img.getBoundingClientRect(), radio);
+    fundido(fondo, 0, 1, 400);
+    controles.forEach((c) => fundido(c, 0, 1, 280, 220));
+    await img.animate(pasos, { duration: 560, easing: SUAVE }).finished.catch(() => {});
+    if (mio !== gen) return;
+    limpiar();
+    ocupado = false;
+  }
+
+  async function cerrar(transformActual = '') {
+    if (!visor.open) return;
+    const mio = ++gen;
+    if (reducir.matches) {
+      visor.close();
+      return;
+    }
+    ocupado = true;
+    img.getAnimations().forEach((a) => a.cancel());
+    const opacidadFondo = parseFloat(fondo.style.opacity || '1');
+    img.style.transform = '';
+    fondo.style.opacity = '';
+
+    // En celular la galería es una tira horizontal: la corre para que la miniatura quede a la vista.
+    const boton = botones[actual];
+    if (galeria.scrollWidth > galeria.clientWidth + 1) {
+      const margen = parseFloat(getComputedStyle(galeria).paddingLeft) || 0;
+      galeria.scrollLeft += boton.getBoundingClientRect().left - galeria.getBoundingClientRect().left - margen;
+    }
+
+    const foto = img.getBoundingClientRect();
+    const mini = boton.getBoundingClientRect();
+    const radio = getComputedStyle(img).borderTopLeftRadius;
+    const inicio = transformActual || 'none';
+    controles.forEach((c) => fundido(c, 1, 0, 160));
+    fundido(fondo, opacidadFondo, 0, 360);
+
+    let anim: Animation;
+    if (aLaVista(mini)) {
+      const [enMiniatura, abierta] = desdeMiniatura(mini, foto, radio);
+      anim = img.animate([{ transform: inicio, clipPath: abierta.clipPath }, enMiniatura], {
+        duration: 440,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        fill: 'forwards',
+      });
+    } else {
+      const achicada = inicio === 'none' ? 'scale(0.92)' : `${inicio} scale(0.92)`;
+      anim = img.animate(
+        [
+          { transform: inicio, opacity: 1 },
+          { transform: achicada, opacity: 0 },
+        ],
+        { duration: 260, easing: 'ease-in', fill: 'forwards' },
+      );
+    }
+    await anim.finished.catch(() => {});
+    if (mio !== gen) return;
+    visor.close();
+  }
+
+  async function ir(dir: 1 | -1, desdeX = 0) {
+    if (!visor.open || ocupado) return;
+    if (reducir.matches) {
+      await poner(actual + dir);
+      return;
+    }
+    const mio = gen;
+    ocupado = true;
+    img.style.transform = '';
+    const salida = img.animate(
+      [
+        { transform: `translateX(${desdeX}px)`, opacity: 1 },
+        { transform: `translateX(${desdeX - dir * 90}px)`, opacity: 0 },
+      ],
+      { duration: 180, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' },
+    );
+    await salida.finished.catch(() => {});
+    if (mio !== gen) return;
+    await poner(actual + dir);
+    if (mio !== gen) return;
+    salida.cancel();
+    await img
+      .animate(
+        [
+          { transform: `translateX(${dir * 90}px)`, opacity: 0 },
+          { transform: 'none', opacity: 1 },
+        ],
+        { duration: 380, easing: SUAVE },
+      )
+      .finished.catch(() => {});
+    if (mio === gen) ocupado = false;
+  }
+
+  // Gestos táctiles
+  let toque: { id: number; x: number; y: number; dx: number; dy: number; eje: '' | 'x' | 'y' } | null = null;
+  escena.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' || ocupado || reducir.matches) return;
+    toque = { id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, dy: 0, eje: '' };
+  });
+  escena.addEventListener('pointermove', (e) => {
+    if (!toque || e.pointerId !== toque.id) return;
+    toque.dx = e.clientX - toque.x;
+    toque.dy = e.clientY - toque.y;
+    if (!toque.eje && Math.hypot(toque.dx, toque.dy) > 10) {
+      toque.eje = Math.abs(toque.dx) > Math.abs(toque.dy) ? 'x' : 'y';
+    }
+    if (toque.eje === 'x') {
+      img.style.transform = `translateX(${toque.dx}px)`;
+    } else if (toque.eje === 'y') {
+      const dy = Math.max(0, toque.dy);
+      img.style.transform = `translateY(${dy}px) scale(${1 - Math.min(dy / 1500, 0.12)})`;
+      fondo.style.opacity = String(1 - Math.min(dy / 450, 0.7));
+    }
+  });
+  const soltar = (e: PointerEvent) => {
+    if (!toque || e.pointerId !== toque.id) return;
+    const { dx, dy, eje } = toque;
+    toque = null;
+    if (!eje) return;
+    arrastre = true;
+    if (eje === 'x' && Math.abs(dx) > 60) {
+      ir(dx < 0 ? 1 : -1, dx);
+    } else if (eje === 'y' && dy > 110) {
+      cerrar(img.style.transform);
+    } else {
+      const t = img.style.transform || 'none';
+      const op = parseFloat(fondo.style.opacity || '1');
+      img.style.transform = '';
+      fondo.style.opacity = '';
+      img.animate([{ transform: t }, { transform: 'none' }], { duration: 320, easing: SUAVE });
+      fondo.animate({ opacity: [op, 1] }, { duration: 320, easing: 'ease-out' });
+    }
+  };
+  escena.addEventListener('pointerup', soltar);
+  escena.addEventListener('pointercancel', soltar);
+
+  botones.forEach((b, i) => b.addEventListener('click', () => abrir(i)));
+  visor.querySelector('[data-close]')!.addEventListener('click', () => cerrar());
+  visor.querySelector('[data-prev]')!.addEventListener('click', () => ir(-1));
+  visor.querySelector('[data-next]')!.addEventListener('click', () => ir(1));
+  visor.addEventListener('click', (e) => {
+    if (arrastre) {
+      arrastre = false;
+      return;
+    }
+    if (e.target === escena || e.target === fondo || e.target === visor) cerrar();
+  });
+  visor.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    cerrar();
+  });
+  visor.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') ir(-1);
+    if (e.key === 'ArrowRight') ir(1);
+  });
+  visor.addEventListener('close', () => {
+    gen++;
+    limpiar();
+    ocupado = false;
+    botones[actual]?.focus({ preventScroll: true });
+  });
+  window.addEventListener('resize', () => {
+    if (visor.open) ajustar();
+  });
+</script>

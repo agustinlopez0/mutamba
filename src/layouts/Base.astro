@@ -1,0 +1,119 @@
+---
+import '../styles/global.css';
+import { getImage } from 'astro:assets';
+import ogSrc from '../assets/fotos/grupo-batizado-2026.jpg';
+import { clases, contacto, igLink, sedes } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = await getImage({ src: ogSrc, width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 80 });
+const ogUrl = new URL(og.src, Astro.site);
+
+const dias = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const sumarHora = (h: string) => {
+  const [hh, mm] = h.split(':').map(Number);
+  return `${String(hh + 1).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': Object.values(sedes).map((sede) => ({
+    '@type': 'SportsActivityLocation',
+    '@id': `${canonical.href}#sede-${sede.id}`,
+    name: `Mutamba Capoeira Rosario – ${sede.direccion}`,
+    description: 'Clases de capoeira para chicos, adultos y adultos mayores en Rosario.',
+    url: canonical.href,
+    telephone: `+${contacto.whatsapp}`,
+    image: ogUrl.href,
+    sameAs: [igLink()],
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: sede.direccion,
+      addressLocality: 'Rosario',
+      addressRegion: 'Santa Fe',
+      addressCountry: 'AR',
+    },
+    openingHoursSpecification: clases
+      .filter((c) => c.sede === sede.id)
+      .flatMap((c) =>
+        c.grilla.map((g) => ({
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: dias[g.dia],
+          opens: g.hora,
+          closes: sumarHora(g.hora),
+        })),
+      ),
+  })),
+};
+---
+
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#141210" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="Mutamba Capoeira Rosario" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="El grupo Mutamba Capoeira Rosario después del batizado 2026" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <slot />
+
+    <script>
+      // Revela los bloques al entrar en pantalla. Los que entran juntos (tarjetas, columnas)
+      // aparecen escalonados, en el orden en que se leen.
+      const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            const nuevos = entries
+              .filter((e) => e.isIntersecting)
+              .map((e) => e.target as HTMLElement)
+              .sort((a, b) => {
+                const ra = a.getBoundingClientRect();
+                const rb = b.getBoundingClientRect();
+                return ra.top - rb.top || ra.left - rb.left;
+              });
+            nuevos.forEach((el, i) => {
+              if (i > 0) {
+                el.style.transitionDelay = `${Math.min(i, 6) * 90}ms`;
+                el.addEventListener('transitionend', () => (el.style.transitionDelay = ''), { once: true });
+              }
+              el.classList.add('is-visible');
+              io.unobserve(el);
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px' },
+        );
+        els.forEach((el) => io.observe(el));
+      } else {
+        els.forEach((el) => el.classList.add('is-visible'));
+      }
+    </script>
+  </body>
+</html>
