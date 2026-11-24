@@ -54,6 +54,12 @@ import { contacto, igLink, waLink } from '../data/site';
     z-index: -1;
     background: linear-gradient(100deg, rgb(18 16 16 / 0.92) 0%, rgb(18 16 16 / 0.78) 50%, rgb(18 16 16 / 0.45) 100%);
   }
+  /* en el celular el texto ocupa todo el ancho: velo parejo */
+  @media (max-width: 720px) {
+    .contacto__shade {
+      background: rgb(18 16 16 / 0.82);
+    }
+  }
   .contacto__content {
     padding-block: clamp(72px, 11vw, 128px);
   }
