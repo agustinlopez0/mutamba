@@ -43,7 +43,10 @@ Todo el contenido vive en **`src/data/site.ts`**:
 
 Cuando se anuncie la próxima edición: actualizar `nombre` (cada año cambia), `edicion`, `fechas`, `inicio` y `fin`
 (las mismas fechas en formato estándar, para que Google muestre el evento), `lugar`, `invitados`, `programa`,
-`inscripcion` y pasar `estado` a `'proximo'`. Las fotos de la galería se cambian en `src/components/Encuentro.astro`.
+`inscripcion` y pasar `estado` a `'proximo'`. Las fotos de la galería se cambian en `src/components/Encuentro.astro`:
+la primera va grande y con `ancha: true` una foto ocupa dos columnas (sirve para las panorámicas). Para que la grilla
+quede completa, los lugares tienen que sumar un múltiplo de 4 (la primera cuenta 4 y cada ancha, 2). Con `posicion`
+se corre el recorte de la miniatura cuando lo importante no está en el centro.
 
 ### Fotos
 

@@ -12,11 +12,15 @@ import Faq from '../components/Faq.astro';
 import CtaFinal from '../components/CtaFinal.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppFlotante from '../components/WhatsAppFlotante.astro';
+
+const resumen =
+  'Clases de capoeira en Rosario para chicos de 8 a 14 años, adultos y adultos mayores, en Pte. Roca 1436 y Mendoza 5395.';
 ---
 
 <Base
   title="Clases de capoeira en Rosario · Mutamba Capoeira Rosario"
-  description="Clases de capoeira en Rosario para chicos de 8 a 14 años, adultos y adultos mayores, en Pte. Roca 1436 y Mendoza 5395. La primera clase es gratis."
+  description={`${resumen} La primera clase es gratis.`}
+  descripcionCompartir={resumen}
 >
   <Header />
   <main>

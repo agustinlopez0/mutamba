@@ -5,17 +5,40 @@ import Foto from './Foto.astro';
 import Icon from './Icon.astro';
 import { actividades, contacto, encuentro, igLink } from '../data/site';
 
-// La primera foto va grande. En celular la galería se desliza de costado.
-const galeria = [
+// La primera foto va grande (2×2) y las marcadas `ancha` ocupan 2 columnas (fotos panorámicas con la acción en
+// los bordes). Para que la grilla de 4 columnas quede completa, los lugares tienen que sumar un múltiplo de 4
+// (hoy: 4 + 3 anchas × 2 + 14 = 24, seis filas). `posicion` corre el recorte de la miniatura (object-position)
+// cuando lo importante no está en el centro. En celular la galería se desliza de costado.
+const galeria: { nombre: string; alt: string; ancha?: boolean; posicion?: string }[] = [
+  { nombre: 'lectura-batizado', alt: 'Dos integrantes de Mutamba Rosario, con micrófono y papeles en la mano, durante el batizado' },
   { nombre: 'roda-mortal', alt: 'Un capoeirista hace una acrobacia invertida en la roda' },
-  { nombre: 'grupo-batizado-2026', alt: 'Foto grupal de Mutamba Rosario con los invitados al cierre del batizado 2026' },
+  { nombre: 'juego-infantil-bateria', alt: 'Un juego entre una persona adulta y alguien del grupo infantil, frente a la batería' },
+  {
+    nombre: 'pie-del-berimbau',
+    alt: 'Dos capoeiristas se preparan para jugar, en cuclillas al pie del berimbau',
+    ancha: true,
+  },
   { nombre: 'batizado-infantil', alt: 'Un profesor le ata la corda a una alumna durante el batizado' },
-  { nombre: 'roda-salto', alt: 'Salto acrobático en la roda frente al grupo' },
-  { nombre: 'esther-roda', alt: 'Alumna del grupo de adultos mayores en la roda del batizado' },
-  { nombre: 'estrella', alt: 'Un aú en el centro de la roda' },
-  { nombre: 'juego-adultos-mayores', alt: 'Un profesor juega con una alumna del grupo de adultos mayores' },
+  { nombre: 'juego-bateria', alt: 'Dos capoeiristas juegan frente a la batería', ancha: true },
   { nombre: 'roda-armada', alt: 'Dos capoeiristas en pleno juego aéreo' },
-  { nombre: 'celebracion', alt: 'Festejo del grupo después del batizado' },
+  {
+    nombre: 'esquiva-bateria',
+    alt: 'Una esquiva con las manos cerca del piso, en un juego frente a la batería',
+    posicion: '30% 50%',
+  },
+  {
+    nombre: 'juego-adultos-mayores',
+    alt: 'Una alumna del grupo de adultos mayores en la roda, de la mano de otro capoeirista, mientras el grupo aplaude',
+  },
+  { nombre: 'juego-batizado', alt: 'Dos capoeiristas en pleno juego frente al cartel de Mutamba' },
+  { nombre: 'abrazo-roda', alt: 'Dos capoeiristas abrazados en el centro de la roda; uno saluda con el brazo en alto' },
+  { nombre: 'roda-salto', alt: 'Salto acrobático en la roda frente al grupo', ancha: true, posicion: '50% 0%' },
+  { nombre: 'charla-berimbau', alt: 'Dos capoeiristas frente a frente, en cuclillas al pie del berimbau' },
+  { nombre: 'estrella', alt: 'Un aú en el centro de la roda' },
+  { nombre: 'microfono-batizado', alt: 'Un capoeirista habla al micrófono con el brazo en alto, frente al cartel de Mutamba' },
+  { nombre: 'juego-infantil-roda', alt: 'Un juego entre una persona adulta y alguien del grupo infantil, con la roda alrededor' },
+  { nombre: 'festejo-final', alt: 'El grupo festeja durante el encuentro' },
+  { nombre: 'grupo-batizado-2026', alt: 'Foto grupal de Mutamba Rosario con los invitados al cierre del batizado 2026' },
 ];
 
 const fotos = import.meta.glob<{ default: ImageMetadata }>('../assets/fotos/*.jpg', { eager: true });
@@ -102,7 +125,10 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
     <ul class="galeria" aria-label={`Fotos de ${nombreEdicion}`} data-reveal>
       {
         galeria.map((g, i) => (
-          <li class="galeria__item" style={`--i: ${i}`}>
+          <li
+            class:list={['galeria__item', { 'galeria__item--ancha': g.ancha }]}
+            style={`--i: ${i}${g.posicion ? `; --pos: ${g.posicion}` : ''}`}
+          >
             <a
               href={grandes[i].src}
               data-full={grandes[i].src}
@@ -114,8 +140,10 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
               <Foto
                 nombre={g.nombre}
                 alt={g.alt}
-                sizes={i === 0 ? '(max-width: 700px) 80vw, 560px' : '(max-width: 700px) 80vw, 280px'}
-                widths={i === 0 ? [600, 900, 1200] : [360, 600]}
+                sizes={
+                  i === 0 || g.ancha ? '(max-width: 700px) 92vw, 560px' : '(max-width: 700px) 80vw, 280px'
+                }
+                widths={i === 0 || g.ancha ? [600, 900, 1200] : [360, 600]}
                 class="galeria__img"
               />
             </a>
@@ -341,6 +369,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   }
   .galeria__item :global(.galeria__img) {
     object-fit: cover;
+    object-position: var(--pos, 50% 50%);
     transition:
       transform 0.7s var(--ease-out),
       filter 0.4s ease;
@@ -353,6 +382,13 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   .galeria__item:first-child {
     grid-column: span 2;
     grid-row: span 2;
+  }
+  /* foto panorámica: ocupa dos columnas para que entren los dos jugadores */
+  .galeria__item--ancha {
+    grid-column: span 2;
+  }
+  .galeria__item--ancha {
+    --pos: 50% 30%;
   }
   /* las fotos entran de a una cuando la galería aparece en pantalla */
   :global(.js) .galeria[data-reveal] {
@@ -548,6 +584,11 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
       flex: 0 0 80%;
       aspect-ratio: 4 / 3;
       scroll-snap-align: start;
+    }
+    /* más ancha y apaisada, pero con la misma altura que las demás */
+    .galeria__item--ancha {
+      flex-basis: 100%;
+      aspect-ratio: 16 / 9;
     }
     .crono {
       grid-template-columns: 1fr;

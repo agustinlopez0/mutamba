@@ -70,7 +70,7 @@ export const clases = [
     horario: 'Viernes de 20 a 21 hs y sábados de 10 a 11 hs',
     sede: 'roca' as SedeId,
     foto: 'clase-infantil',
-    fotoAlt: 'Un profesor y una nena entrenando juntos un movimiento de capoeira',
+    fotoAlt: 'Dos alumnos del grupo infantil juegan en la roda mientras sus compañeros hacen palmas',
     whatsapp: 'infantil' as MensajeKey,
   },
   {
@@ -81,7 +81,7 @@ export const clases = [
     horario: 'Martes y jueves a las 11 hs',
     sede: 'mendoza' as SedeId,
     foto: 'clase-adultos-mayores',
-    fotoAlt: 'Una alumna del grupo de adultos mayores abrazada a su profesor',
+    fotoAlt: 'Una alumna del grupo de adultos mayores juega en la roda frente a la batería',
     whatsapp: 'mayores' as MensajeKey,
   },
 ] as const;

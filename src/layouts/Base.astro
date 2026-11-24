@@ -6,12 +6,15 @@ import { clases, contacto, encuentro, igLink, sedes } from '../data/site';
 
 interface Props {
   title: string;
+  /** Descripción para Google. */
   description: string;
+  /** Texto de la vista previa al compartir el link (WhatsApp, redes). Si no se pasa, se usa `description`. */
+  descripcionCompartir?: string;
   /** Para páginas que no tienen que aparecer en Google (por ejemplo, la de error). */
   noindex?: boolean;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, descripcionCompartir = description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
 
@@ -151,7 +154,7 @@ const jsonLd = {
     <meta property="og:locale" content="es_AR" />
     <meta property="og:site_name" content="Mutamba Capoeira Rosario" />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={descripcionCompartir} />
     {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogUrl} />
     <meta property="og:image:secure_url" content={ogUrl} />
@@ -161,7 +164,7 @@ const jsonLd = {
     <meta property="og:image:alt" content={ogAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={descripcionCompartir} />
     <meta name="twitter:image" content={ogUrl} />
     <meta name="twitter:image:alt" content={ogAlt} />
 
