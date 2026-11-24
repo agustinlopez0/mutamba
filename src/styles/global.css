@@ -11,7 +11,9 @@
   --red: #e0281b;
   --red-deep: #b5180d;
   --night: #121010;
-  --wa: #1fa855;
+  --wa: #15803d;
+  --wa-hover: #11733a;
+  --wa-texto: #136f37; /* verde para texto sobre fondos claros */
 
   --font-display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
   --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -159,7 +161,7 @@ p {
   --btn-bg: var(--wa);
 }
 .btn--wa:hover {
-  --btn-bg: #188f47;
+  --btn-bg: var(--wa-hover);
 }
 
 .btn--red {
@@ -189,6 +191,14 @@ p {
   min-height: 42px;
   padding: 0 18px;
   font-size: 0.9375rem;
+}
+
+/* celulares muy angostos: que los botones con textos largos (ej. el usuario de Instagram) entren */
+@media (max-width: 360px) {
+  .btn {
+    gap: 8px;
+    padding-inline: 16px;
+  }
 }
 
 .visually-hidden {

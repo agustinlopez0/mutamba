@@ -42,10 +42,11 @@ const links = [
       </a>
     </nav>
 
-    <button class="header__toggle" type="button" aria-expanded="false" aria-controls="menu" data-toggle>
+    <!-- Es un link a #menu para que el menú abra aunque no cargue JavaScript (ver :target en el CSS). -->
+    <a class="header__toggle" href="#menu" role="button" aria-expanded="false" aria-controls="menu" data-toggle>
       <span class="visually-hidden">Abrir menú</span>
       <span class="bars" aria-hidden="true"><span></span><span></span></span>
-    </button>
+    </a>
   </div>
 </header>
 
@@ -80,6 +81,7 @@ const links = [
     text-decoration: none;
   }
   .header__logo :global(img) {
+    width: clamp(112px, 36vw, 150px);
     height: auto;
   }
   .header__sede {
@@ -104,6 +106,8 @@ const links = [
     padding: 0;
   }
   .header__nav ul a {
+    display: block;
+    padding-block: 10px;
     text-decoration: none;
     font-weight: 600;
     font-size: 0.9375rem;
@@ -165,7 +169,8 @@ const links = [
         transform 0.2s ease,
         visibility 0.2s;
     }
-    .is-open .header__nav {
+    .is-open .header__nav,
+    :global(html:not(.js)) .header__nav:target {
       transform: none;
       opacity: 1;
       visibility: visible;
@@ -192,6 +197,8 @@ const links = [
         opacity 0.25s ease,
         transform 0.25s ease;
     }
+    :global(html:not(.js)) .header__nav:target li,
+    :global(html:not(.js)) .header__nav:target .header__cta,
     .is-open .header__nav li,
     .is-open .header__cta {
       opacity: 1;
@@ -206,7 +213,7 @@ const links = [
 
 <script>
   const header = document.querySelector<HTMLElement>('[data-header]')!;
-  const toggle = header.querySelector<HTMLButtonElement>('[data-toggle]')!;
+  const toggle = header.querySelector<HTMLElement>('[data-toggle]')!;
   const menu = header.querySelector<HTMLElement>('[data-menu]')!;
 
   const onScroll = () => header.classList.toggle('is-solid', window.scrollY > 40);
@@ -218,7 +225,18 @@ const links = [
     toggle.setAttribute('aria-expanded', String(open));
     toggle.querySelector('.visually-hidden')!.textContent = open ? 'Cerrar menú' : 'Abrir menú';
   };
-  toggle.addEventListener('click', () => setOpen(!header.classList.contains('is-open')));
+  // Sin JavaScript, el menú abre con #menu en la URL; con JavaScript se maneja acá y la URL no cambia.
+  if (location.hash === '#menu') history.replaceState(null, '', location.pathname + location.search);
+  toggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    setOpen(!header.classList.contains('is-open'));
+  });
+  toggle.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+      e.preventDefault();
+      toggle.click();
+    }
+  });
   menu.addEventListener('click', (e) => {
     if ((e.target as HTMLElement).closest('a')) setOpen(false);
   });

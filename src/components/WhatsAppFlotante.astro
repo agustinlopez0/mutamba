@@ -34,7 +34,7 @@ import { waLink } from '../data/site';
     transform: none;
   }
   .wa-float:hover {
-    background: #188f47;
+    background: var(--wa-hover);
   }
   .wa-float :global(svg) {
     width: 28px;
@@ -43,13 +43,25 @@ import { waLink } from '../data/site';
 </style>
 
 <script>
-  // Aparece cuando el hero ya no está a la vista, para no duplicar el CTA principal.
+  // Aparece cuando el hero ya no está a la vista y se esconde al llegar a Contacto y al footer,
+  // que ya tienen sus propios botones de WhatsApp.
   const btn = document.querySelector<HTMLElement>('[data-wa-float]')!;
-  const hero = document.getElementById('top');
-  if (hero && 'IntersectionObserver' in window) {
-    new IntersectionObserver(([e]) => btn.classList.toggle('is-visible', !e.isIntersecting), {
-      threshold: 0.15,
-    }).observe(hero);
+  const zonas = [document.getElementById('top'), document.getElementById('contacto'), document.querySelector('footer')].filter(
+    (z): z is HTMLElement => !!z,
+  );
+  if (zonas.length && 'IntersectionObserver' in window) {
+    const enVista = new Set<Element>();
+    const io = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) enVista.add(e.target);
+          else enVista.delete(e.target);
+        }
+        btn.classList.toggle('is-visible', enVista.size === 0);
+      },
+      { threshold: 0.15 },
+    );
+    zonas.forEach((z) => io.observe(z));
   } else {
     btn.classList.add('is-visible');
   }

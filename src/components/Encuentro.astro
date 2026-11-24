@@ -31,6 +31,8 @@ const grandes = await Promise.all(
 );
 
 const proximo = encuentro.estado === 'proximo';
+// "Durante 2026": el año sale de las actividades, así el título no queda viejo cuando se actualizan.
+const anioActividades = Math.max(...actividades.map((a) => Number(a.fecha.match(/\d{4}/)?.[0] ?? 0)));
 const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
 
 ---
@@ -38,7 +40,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
 <section class="section encuentro" id="encuentro">
   <div class="container">
     <header class="encuentro__head" data-reveal>
-      <h2 class="section-title">Batizado y troca de cordas</h2>
+      <h2 class="section-title"><span lang="pt">Batizado</span> y <span lang="pt">troca de cordas</span></h2>
       <p class="section-lead">
         Una vez por año hacemos un encuentro con invitados de otros grupos. Hay talleres y rodas abiertas, y se hace
         el batizado y la troca de cordas de la escuela.
@@ -101,8 +103,8 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
       {
         galeria.map((g, i) => (
           <li class="galeria__item" style={`--i: ${i}`}>
-            <button
-              type="button"
+            <a
+              href={grandes[i].src}
               data-full={grandes[i].src}
               data-w={grandes[i].w}
               data-h={grandes[i].h}
@@ -116,7 +118,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
                 widths={i === 0 ? [600, 900, 1200] : [360, 600]}
                 class="galeria__img"
               />
-            </button>
+            </a>
           </li>
         ))
       }
@@ -124,7 +126,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
 
     <div class="anio">
       <div class="anio__lista" data-reveal>
-        <h3>Durante el año</h3>
+        <h3>Durante {anioActividades}</h3>
         <ul>
           {
             actividades.map((a) => (
@@ -195,7 +197,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   }
   .encuentro__head {
     display: grid;
-    grid-template-columns: 0.9fr 1.1fr;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     gap: 24px 64px;
     align-items: end;
   }
@@ -213,7 +215,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   .edicion {
     margin-top: 48px;
     display: grid;
-    grid-template-columns: 1.3fr 1fr;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     border-radius: var(--radius-lg);
     overflow: hidden;
     background: #1d1a19;
@@ -321,7 +323,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
     grid-auto-flow: dense;
     gap: 10px;
   }
-  .galeria__item button {
+  .galeria__item a {
     display: block;
     width: 100%;
     height: 100%;
@@ -343,8 +345,8 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
       transform 0.7s var(--ease-out),
       filter 0.4s ease;
   }
-  .galeria__item button:hover :global(.galeria__img),
-  .galeria__item button:focus-visible :global(.galeria__img) {
+  .galeria__item a:hover :global(.galeria__img),
+  .galeria__item a:focus-visible :global(.galeria__img) {
     transform: scale(1.05);
     filter: brightness(1.08);
   }
@@ -374,7 +376,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   .anio {
     margin-top: 56px;
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 24px;
   }
   .anio h3 {
@@ -410,9 +412,6 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   }
   .anio__cta {
     align-self: start;
-    padding: clamp(24px, 4vw, 32px);
-    border-radius: var(--radius-lg);
-    border: 1px solid rgb(255 255 255 / 0.16);
   }
   .anio__actions {
     display: flex;
@@ -527,7 +526,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
     .encuentro__head,
     .edicion,
     .anio {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
   @media (max-width: 700px) {
@@ -597,7 +596,7 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   const contador = visor.querySelector<HTMLElement>('[data-contador]')!;
   const controles = [...visor.querySelectorAll<HTMLElement>('.visor__ctrl')];
   const galeria = document.querySelector<HTMLElement>('.galeria')!;
-  const botones = [...galeria.querySelectorAll<HTMLButtonElement>('[data-full]')];
+  const botones = [...galeria.querySelectorAll<HTMLAnchorElement>('[data-full]')];
   const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
   const SUAVE = 'cubic-bezier(0.22, 1, 0.36, 1)';
   const total = botones.length;
@@ -814,7 +813,13 @@ const nombreEdicion = `${encuentro.nombre} ${encuentro.edicion}`;
   escena.addEventListener('pointerup', soltar);
   escena.addEventListener('pointercancel', soltar);
 
-  botones.forEach((b, i) => b.addEventListener('click', () => abrir(i)));
+  botones.forEach((b, i) =>
+    b.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // abrir en pestaña nueva sigue funcionando
+      e.preventDefault();
+      abrir(i);
+    }),
+  );
   visor.querySelector('[data-close]')!.addEventListener('click', () => cerrar());
   visor.querySelector('[data-prev]')!.addEventListener('click', () => ir(-1));
   visor.querySelector('[data-next]')!.addEventListener('click', () => ir(1));

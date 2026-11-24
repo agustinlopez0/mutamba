@@ -28,12 +28,18 @@ const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
               </a>
             </div>
             <div class="sede__mapa">
-              <iframe
-                src={mapsEmbed(s.id)}
-                title={`Mapa: ${s.direccion}, Rosario`}
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-              />
+              <a
+                class="sede__ver"
+                href={mapsLink(s.id)}
+                target="_blank"
+                rel="noopener"
+                data-embed={mapsEmbed(s.id)}
+                data-titulo={`Mapa: ${s.direccion}, Rosario`}
+                aria-label={`Ver mapa de ${s.direccion}`}
+              >
+                <Icon name="pin" />
+                <span>Ver mapa</span>
+              </a>
             </div>
           </article>
         ))
@@ -58,6 +64,7 @@ const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
   }
   .sede__head {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-end;
     gap: 16px;
@@ -92,27 +99,100 @@ const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
   .sede__link:hover :global(svg) {
     transform: translateX(3px);
   }
+  /* Mapa liviano: una cuadrícula de calles con el pin. El mapa de Google se carga solo si lo piden. */
   .sede__mapa {
+    position: relative;
     margin-top: 18px;
     aspect-ratio: 4 / 3;
     border-radius: var(--radius-lg);
     overflow: hidden;
-    background: var(--paper);
+    background-color: #e4dccf;
+    background-image:
+      radial-gradient(circle at 50% 46%, rgb(247 243 236 / 0) 0, rgb(228 220 207 / 0.9) 75%),
+      linear-gradient(90deg, transparent calc(62% - 9px), #fbf8f3 calc(62% - 9px) calc(62% + 9px), transparent 0),
+      repeating-linear-gradient(0deg, #f7f2ea 0 8px, transparent 8px 58px),
+      repeating-linear-gradient(90deg, #f7f2ea 0 8px, transparent 8px 58px);
   }
-  .sede__mapa iframe {
-    display: block;
+  .sede__ver {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 12px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .sede__ver :global(svg) {
+    width: 46px;
+    height: 46px;
+    color: var(--red);
+    filter: drop-shadow(0 4px 6px rgb(20 18 16 / 0.25));
+    transition: transform 0.3s var(--ease-out);
+  }
+  .sede__ver span {
+    padding: 10px 20px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: var(--shadow);
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: transform 0.2s ease;
+  }
+  .sede__ver:hover :global(svg) {
+    transform: translateY(-4px);
+  }
+  .sede__ver:hover span {
+    transform: translateY(-1px);
+  }
+  /* el iframe lo crea el script: necesita :global para recibir estos estilos */
+  .sede__mapa :global(iframe) {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     border: 0;
+    opacity: 0;
     filter: grayscale(0.3);
+    transition: opacity 0.5s ease;
+  }
+  .sede__mapa.is-listo :global(iframe) {
+    opacity: 1;
   }
 
   @media (max-width: 700px) {
     .sedes__grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .sede__mapa {
       aspect-ratio: 1 / 1;
     }
   }
 </style>
+
+<script>
+  // Carga el mapa de Google recién cuando alguien toca "Ver mapa" (ahorra datos y no carga cookies de Google antes).
+  document.querySelectorAll<HTMLAnchorElement>('.sede__ver[data-embed]').forEach((boton) => {
+    boton.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const caja = boton.parentElement!;
+      if (caja.querySelector('iframe')) return;
+      boton.querySelector('span')!.textContent = 'Cargando mapa…';
+      const mapa = document.createElement('iframe');
+      mapa.src = boton.dataset.embed!;
+      mapa.title = boton.dataset.titulo!;
+      mapa.referrerPolicy = 'no-referrer-when-downgrade';
+      mapa.addEventListener(
+        'load',
+        () => {
+          caja.classList.add('is-listo');
+          boton.setAttribute('tabindex', '-1');
+          boton.setAttribute('aria-hidden', 'true');
+        },
+        { once: true },
+      );
+      caja.append(mapa);
+    });
+  });
+</script>
