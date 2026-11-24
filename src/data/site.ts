@@ -78,7 +78,7 @@ export const clases = [
     titulo: 'Adultos mayores',
     descripcion:
       'Capoeira adaptada. Trabajamos movilidad, equilibrio y coordinación, y también tocamos instrumentos y cantamos.',
-    horario: 'Martes y jueves a las 11 hs',
+    horario: 'Martes y jueves de 11 a 12 hs',
     sede: 'mendoza' as SedeId,
     foto: 'clase-adultos-mayores',
     fotoAlt: 'Una alumna del grupo de adultos mayores juega en la roda frente a la batería',

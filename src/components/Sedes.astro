@@ -42,12 +42,12 @@ const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
               <figure class="sede__foto">
                 <Foto
                   nombre={`sede-${s.id}`}
-                  alt={`La entrada de la sede de ${s.direccion}`}
+                  alt={`El frente de ${s.lugar}, en ${s.direccion}`}
                   sizes="(max-width: 700px) 85vw, (max-width: 1000px) 45vw, 340px"
                   widths={[340, 500, 680]}
                   class="sede__img"
                 />
-                <figcaption class="sede__chip">La entrada</figcaption>
+                <figcaption class="sede__chip">El frente</figcaption>
               </figure>
               {s.mapa && (
                 <div class="sede__mapa">
