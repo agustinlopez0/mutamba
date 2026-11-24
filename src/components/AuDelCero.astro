@@ -1,0 +1,272 @@
+---
+// El 404 con el cero hecho capoeirista: tiene el cordón atado a la cintura, hace la ginga y cada tanto
+// se tira un aú (la medialuna de la capoeira). Los cuatros se corren para dejarle lugar.
+// Al tocar el dibujo, el cero salta enseguida.
+const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 H26 Z';
+---
+
+<svg
+  class="au"
+  viewBox="0 0 360 310"
+  role="img"
+  aria-label="Un 404 en el que el cero, con un cordón de capoeira en la cintura, hace un aú"
+  data-au
+>
+  <path class="au__piso" d="M14 300.5 H346"></path>
+  <ellipse class="au__sombra" cx="180" cy="301" rx="44" ry="5" data-sombra></ellipse>
+
+  <!-- los cuatros: se inclinan hacia afuera apoyados en la punta del pie -->
+  <g transform="translate(22 150)">
+    <g class="au__cuatro" style="transform-origin: 52px 150px" data-cuatro="-1">
+      <path d={cuatro}></path>
+    </g>
+  </g>
+  <g transform="translate(246 150)">
+    <g class="au__cuatro" style="transform-origin: 80px 150px" data-cuatro="1">
+      <path d={cuatro}></path>
+    </g>
+  </g>
+
+  <!-- polvo que levanta al caer -->
+  <g class="au__polvo">
+    <circle cx="142" cy="297" r="4" data-polvo="-1"></circle>
+    <circle cx="150" cy="299" r="3" data-polvo="-1.5"></circle>
+    <circle cx="218" cy="297" r="4" data-polvo="1"></circle>
+    <circle cx="210" cy="299" r="3" data-polvo="1.5"></circle>
+  </g>
+
+  <!-- el cero, con el centro en (0, 0) y los pies en y = 75 -->
+  <g transform="translate(180 225)">
+    <g class="au__mueve" data-salto>
+      <g class="au__mueve au__estela" data-estela>
+        <path d="M-90.2 -32.8 A96 96 0 0 1 32.8 -90.2"></path>
+        <path d="M90.2 32.8 A96 96 0 0 1 -32.8 90.2"></path>
+      </g>
+      <g class="au__mueve au__desde-los-pies" data-ginga>
+        <g class="au__mueve au__desde-los-pies" data-estiro>
+          <g class="au__mueve" data-giro>
+            <rect class="au__cero" x="-32" y="-61" width="64" height="122" rx="30"></rect>
+            <g class="au__cordon">
+              <rect x="-48" y="7" width="32" height="10" rx="3"></rect>
+              <rect x="16" y="7" width="32" height="10" rx="3"></rect>
+              <g class="au__mueve au__puntas" data-puntas>
+                <path d="M-34 15 C-37 24 -38 31 -36 40"></path>
+                <path d="M-30 15 C-27 23 -25 29 -26 37"></path>
+              </g>
+              <circle cx="-32" cy="12" r="6.5"></circle>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
+
+<style>
+  .au {
+    width: min(340px, 80vw);
+    height: auto;
+    overflow: visible;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .au__piso {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.08);
+    stroke-width: 1;
+  }
+  .au__sombra {
+    fill: rgb(255 255 255 / 0.07);
+    transform-box: view-box;
+    transform-origin: 180px 301px;
+  }
+  .au__cuatro {
+    fill: var(--paper-2);
+    fill-rule: evenodd;
+    transform-box: view-box;
+  }
+  .au__cero {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 28;
+  }
+  .au__cordon {
+    fill: var(--red);
+  }
+  .au__puntas {
+    fill: none;
+    stroke: var(--red);
+    stroke-width: 5;
+    stroke-linecap: round;
+    transform-origin: -32px 12px;
+  }
+  .au__polvo circle {
+    fill: rgb(239 232 220 / 0.5);
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .au__estela {
+    fill: none;
+    stroke: rgb(239 232 220 / 0.4);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0;
+  }
+
+  /* todo lo que se mueve gira alrededor de puntos del dibujo, no de su propia caja */
+  .au__mueve {
+    transform-box: view-box;
+  }
+  .au__desde-los-pies {
+    transform-origin: 0 75px;
+  }
+</style>
+
+<script>
+  // El cero hace la ginga y cada tanto se tira un aú. Al tocar el dibujo, lo hace enseguida.
+  const DURACION = 1500; // un aú entero: se agacha, gira en el aire, cae y se acomoda
+  const VAIVEN = 2000; // una ida y vuelta de la ginga
+  const subida = 'cubic-bezier(0.33, 0.66, 0.66, 1)';
+  const bajada = 'cubic-bezier(0.33, 0, 0.66, 0.33)';
+
+  const svg = document.querySelector<SVGSVGElement>('[data-au]');
+  if (svg) {
+    const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const uno = (selector: string) => svg.querySelector<SVGElement>(selector);
+    const todos = (selector: string) => [...svg.querySelectorAll<SVGElement>(selector)];
+
+    const ginga = uno('[data-ginga]');
+    let vaiven: Animation | undefined;
+    let enElAire = false;
+    let espera = 0;
+
+    const hacerGinga = () => {
+      vaiven = ginga?.animate(
+        [
+          { transform: 'translateX(0) rotate(0deg)', easing: 'ease-in-out' },
+          { transform: 'translateX(-3px) rotate(-3deg)', easing: 'ease-in-out' },
+          { transform: 'translateX(0) rotate(0deg)', easing: 'ease-in-out' },
+          { transform: 'translateX(3px) rotate(3deg)', easing: 'ease-in-out' },
+          { transform: 'translateX(0) rotate(0deg)' },
+        ],
+        { duration: VAIVEN, iterations: Infinity },
+      );
+    };
+
+    // Los cuatros se inclinan hacia afuera mientras el cero está en el aire y vuelven con un rebote.
+    const inclinar = (lado: number): Keyframe[] => [
+      { offset: 0, transform: 'rotate(0deg)' },
+      { offset: 0.04, transform: 'rotate(0deg)', easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' },
+      { offset: 0.22, transform: `rotate(${11 * lado}deg)` },
+      { offset: 0.7, transform: `rotate(${11 * lado}deg)`, easing: 'ease-in-out' },
+      { offset: 0.85, transform: `rotate(${-2.5 * lado}deg)`, easing: 'ease-in-out' },
+      { offset: 0.94, transform: `rotate(${1 * lado}deg)`, easing: 'ease-in-out' },
+      { offset: 1, transform: 'rotate(0deg)' },
+    ];
+
+    const au = () => {
+      if (enElAire || reducir.matches) return;
+      enElAire = true;
+      window.clearTimeout(espera);
+      vaiven?.cancel();
+
+      const animaciones = [
+        uno('[data-salto]')?.animate(
+          [
+            { offset: 0, transform: 'translateY(0)' },
+            { offset: 0.2, transform: 'translateY(0)', easing: subida },
+            { offset: 0.475, transform: 'translateY(-120px)', easing: bajada },
+            { offset: 0.75, transform: 'translateY(0)' },
+            { offset: 1, transform: 'translateY(0)' },
+          ],
+          DURACION,
+        ),
+        uno('[data-giro]')?.animate(
+          [
+            { offset: 0, transform: 'rotate(0deg)' },
+            { offset: 0.2, transform: 'rotate(0deg)', easing: 'cubic-bezier(0.45, 0.05, 0.55, 0.95)' },
+            { offset: 0.75, transform: 'rotate(-360deg)' },
+            { offset: 1, transform: 'rotate(-360deg)' },
+          ],
+          DURACION,
+        ),
+        // se agacha antes de saltar y se aplasta al caer
+        uno('[data-estiro]')?.animate(
+          [
+            { offset: 0, transform: 'scale(1, 1)', easing: 'ease-out' },
+            { offset: 0.13, transform: 'scale(1.1, 0.8)', easing: 'ease-in' },
+            { offset: 0.2, transform: 'scale(0.92, 1.1)', easing: 'ease-out' },
+            { offset: 0.32, transform: 'scale(1, 1)' },
+            { offset: 0.7, transform: 'scale(1, 1)', easing: 'ease-in' },
+            { offset: 0.75, transform: 'scale(1.12, 0.8)', easing: 'ease-out' },
+            { offset: 0.87, transform: 'scale(0.97, 1.04)', easing: 'ease-in-out' },
+            { offset: 1, transform: 'scale(1, 1)' },
+          ],
+          DURACION,
+        ),
+        // las puntas del cordón siguen el movimiento con un poco de retraso
+        uno('[data-puntas]')?.animate(
+          [0, 0, 28, -18, 22, -12, 8, -3, 0].map((grados, i) => ({
+            offset: [0, 0.2, 0.3, 0.45, 0.6, 0.75, 0.86, 0.94, 1][i],
+            transform: `rotate(${grados}deg)`,
+            easing: 'ease-in-out',
+          })),
+          DURACION,
+        ),
+        uno('[data-estela]')?.animate(
+          [
+            { offset: 0, transform: 'rotate(0deg)', opacity: 0 },
+            { offset: 0.24, transform: 'rotate(-40deg)', opacity: 0 },
+            { offset: 0.4, transform: 'rotate(-200deg)', opacity: 1 },
+            { offset: 0.56, transform: 'rotate(-330deg)', opacity: 1 },
+            { offset: 0.72, transform: 'rotate(-440deg)', opacity: 0 },
+            { offset: 1, transform: 'rotate(-440deg)', opacity: 0 },
+          ],
+          DURACION,
+        ),
+        uno('[data-sombra]')?.animate(
+          [
+            { offset: 0, transform: 'scale(1)', opacity: 1, easing: 'ease-out' },
+            { offset: 0.13, transform: 'scale(1.15, 1)', opacity: 1 },
+            { offset: 0.2, transform: 'scale(1)', opacity: 1, easing: subida },
+            { offset: 0.475, transform: 'scale(0.5)', opacity: 0.4, easing: bajada },
+            { offset: 0.75, transform: 'scale(1.18, 1)', opacity: 1, easing: 'ease-out' },
+            { offset: 0.87, transform: 'scale(1)', opacity: 1 },
+            { offset: 1, transform: 'scale(1)', opacity: 1 },
+          ],
+          DURACION,
+        ),
+        ...todos('[data-cuatro]').map((cuatro) =>
+          cuatro.animate(inclinar(Number(cuatro.dataset.cuatro)), DURACION),
+        ),
+        ...todos('[data-polvo]').map((polvo) => {
+          const lado = Number(polvo.dataset.polvo);
+          return polvo.animate(
+            [
+              { transform: 'translate(0, 0) scale(0.6)', opacity: 0 },
+              { offset: 0.25, transform: `translate(${lado * 8}px, -3px) scale(1)`, opacity: 0.9 },
+              { transform: `translate(${lado * 26}px, -9px) scale(1.5)`, opacity: 0 },
+            ],
+            { duration: 650, delay: DURACION * 0.75 - 30, easing: 'ease-out' },
+          );
+        }),
+      ];
+
+      const seguir = () => {
+        enElAire = false;
+        if (reducir.matches) return;
+        hacerGinga();
+        // el próximo aú sale justo al terminar dos vaivenes, con el cero derecho
+        espera = window.setTimeout(au, VAIVEN * 2);
+      };
+      Promise.all(animaciones.map((a) => a?.finished)).then(seguir, seguir);
+    };
+
+    if (!reducir.matches) {
+      hacerGinga();
+      espera = window.setTimeout(au, VAIVEN);
+    }
+    svg.addEventListener('click', au);
+  }
+</script>

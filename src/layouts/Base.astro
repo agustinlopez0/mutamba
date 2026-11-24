@@ -7,9 +7,11 @@ import { clases, contacto, encuentro, igLink, sedes } from '../data/site';
 interface Props {
   title: string;
   description: string;
+  /** Para páginas que no tienen que aparecer en Google (por ejemplo, la de error). */
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
 
@@ -123,8 +125,16 @@ const jsonLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <>
+          <link rel="canonical" href={canonical} />
+          <meta name="robots" content="index, follow, max-image-preview:large" />
+        </>
+      )
+    }
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
@@ -142,7 +152,7 @@ const jsonLd = {
     <meta property="og:site_name" content="Mutamba Capoeira Rosario" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogUrl} />
     <meta property="og:image:secure_url" content={ogUrl} />
     <meta property="og:image:type" content="image/jpeg" />
@@ -155,7 +165,7 @@ const jsonLd = {
     <meta name="twitter:image" content={ogUrl} />
     <meta name="twitter:image:alt" content={ogAlt} />
 
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
   <body>

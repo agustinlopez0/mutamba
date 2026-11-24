@@ -1,0 +1,102 @@
+---
+// Contenido de la página de error 404: el dibujo del aú, qué pasó y dos salidas claras.
+import Icon from './Icon.astro';
+import AuDelCero from './AuDelCero.astro';
+
+const inicio = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+---
+
+<section class="nf" id="contenido">
+  <div class="container nf__inner">
+    <div class="nf__ilustracion">
+      <AuDelCero />
+    </div>
+    <h1 class="nf__titulo">Página no encontrada</h1>
+    <p class="nf__texto">Error 404: la página que buscás no existe o cambió de dirección.</p>
+    <div class="nf__acciones">
+      <a class="btn btn--red" href={inicio}>Volver al inicio</a>
+      <a class="btn btn--ghost" href={`${inicio}#clases`}>
+        Ver horarios
+        <Icon name="arrow" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .nf {
+    min-height: 100svh;
+    display: grid;
+    align-items: center;
+    padding: calc(var(--header-h) + 24px) 0 56px;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 36%, #261e1c 0%, rgb(38 30 28 / 0) 100%),
+      var(--night);
+    color: #fff;
+    text-align: center;
+  }
+  .nf__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .nf__ilustracion {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .nf__titulo {
+    margin-top: 28px;
+    max-width: 16ch;
+    font-size: clamp(2.4rem, 6.5vw, 4.25rem);
+  }
+  .nf__texto {
+    margin-top: 16px;
+    max-width: 42ch;
+    font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
+    color: rgb(255 255 255 / 0.8);
+    text-wrap: balance;
+  }
+  .nf__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  /* entrada: el dibujo aparece y el texto sube de a una línea */
+  @keyframes nf-aparecer {
+    from {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+  }
+  @keyframes nf-subir {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  :global(.js) .nf__ilustracion {
+    animation: nf-aparecer 0.9s var(--ease-out) both;
+  }
+  :global(.js) .nf__titulo {
+    animation: nf-subir 0.8s var(--ease-out) 0.15s both;
+  }
+  :global(.js) .nf__texto {
+    animation: nf-subir 0.8s var(--ease-out) 0.25s both;
+  }
+  :global(.js) .nf__acciones {
+    animation: nf-subir 0.8s var(--ease-out) 0.35s both;
+  }
+
+  @media (max-width: 560px) {
+    .nf__acciones {
+      width: 100%;
+    }
+    .nf__acciones .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>

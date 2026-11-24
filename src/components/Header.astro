@@ -11,11 +11,16 @@ const links = [
   { href: '#sedes', label: 'Sedes' },
   { href: '#preguntas', label: 'Preguntas' },
 ];
+
+// Desde otras páginas (por ejemplo, la de error) los links llevan a las secciones del inicio.
+const inicio = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const enInicio = Astro.url.pathname === inicio;
+const destino = (ancla: string) => (enInicio ? ancla : `${inicio}${ancla}`);
 ---
 
 <header class="header" data-header>
   <div class="container header__inner">
-    <a href="#top" class="header__logo" aria-label="Mutamba Capoeira Rosario, ir al inicio">
+    <a href={enInicio ? '#top' : inicio} class="header__logo" aria-label="Mutamba Capoeira Rosario, ir al inicio">
       <Logo width={150} priority />
       <span class="header__sede">Rosario</span>
     </a>
@@ -25,7 +30,7 @@ const links = [
         {
           links.map((l, i) => (
             <li style={`--i: ${i}`}>
-              <a href={l.href}>{l.label}</a>
+              <a href={destino(l.href)}>{l.label}</a>
             </li>
           ))
         }

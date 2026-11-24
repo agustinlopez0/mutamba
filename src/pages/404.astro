@@ -1,0 +1,19 @@
+---
+// Página de error 404. Vercel la muestra sola para cualquier dirección que no existe.
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import NoEncontrada from '../components/NoEncontrada.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Base
+  title="Página no encontrada · Mutamba Capoeira Rosario"
+  description="Error 404: la página que buscás no existe o cambió de dirección."
+  noindex
+>
+  <Header />
+  <main>
+    <NoEncontrada />
+  </main>
+  <Footer />
+</Base>
