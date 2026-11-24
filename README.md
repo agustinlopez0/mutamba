@@ -26,7 +26,7 @@ Todo el contenido vive en **`src/data/site.ts`**:
 | --- | --- |
 | Teléfono / WhatsApp, Instagram | `contacto` |
 | Mensajes pre-cargados de WhatsApp | `mensajesWhatsApp` |
-| Direcciones | `sedes` |
+| Direcciones y lugar de cada sede | `sedes` (`lugar` y `rubro`: dónde se dan las clases, ej. "Forja") |
 | Clases, horarios, textos y foto de cada clase | `clases` (`horario` es el texto que se ve; el de adultos mayores también aparece en su sección) |
 | Profes | `profes` (fotos en `src/assets/profes/`, cuadradas; la de Vero es provisoria) |
 | Videos de alumnas (adultos mayores) | `videos` |
@@ -49,6 +49,24 @@ Cuando se anuncie la próxima edición: actualizar `nombre` (cada año cambia), 
 
 Van en `src/assets/fotos/` (JPG, idealmente ≤ 2000px de lado). Astro las convierte a AVIF/WebP en varios tamaños al
 hacer build. Se referencian por nombre de archivo sin extensión (ej. `nombre="clase-adultos"`).
+
+### Sedes: foto de la entrada y mapa
+
+Cada sede muestra una foto de la entrada y un mapa, que se buscan por el `id` de la sede (`roca`, `mendoza`):
+
+- Foto: `src/assets/fotos/sede-<id>.jpg` (cuadrada o casi; se recorta al centro).
+- Mapa: `src/assets/mapas/<id>.png`, una imagen fija hecha con OpenStreetMap y centrada en la dirección (por eso el
+  pin va en el medio). Al tocarla se abre Google Maps.
+
+Si cambia una dirección o se agrega una sede, hay que volver a generar el mapa:
+
+```bash
+node scripts/mapa-sede.mjs <id> <lat> <lon>
+# ej.: node scripts/mapa-sede.mjs roca -32.9530591 -60.6471295
+```
+
+Las coordenadas se sacan de Google Maps: clic derecho sobre el lugar y clic en la primera línea del menú, que las
+copia. El crédito «© OpenStreetMap» que aparece sobre el mapa lo pide la licencia: no hay que sacarlo.
 
 ### Logo
 

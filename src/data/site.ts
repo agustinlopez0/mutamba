@@ -26,14 +26,19 @@ export const waLink = (key: MensajeKey = 'general') =>
 
 export const igLink = (user = contacto.instagram) => `https://www.instagram.com/${user}/`;
 
+// `lugar` y `rubro`: dónde se dan las clases, para que la gente reconozca la entrada.
 export const sedes = {
   roca: {
     id: 'roca',
     direccion: 'Pte. Roca 1436',
+    lugar: 'Forja',
+    rubro: 'deportes de combate',
   },
   mendoza: {
     id: 'mendoza',
     direccion: 'Mendoza 5395',
+    lugar: 'EXIMUS',
+    rubro: 'centro de entrenamiento y salud',
   },
 } as const;
 
@@ -43,11 +48,6 @@ export const mapsLink = (sede: SedeId) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${sedes[sede].direccion}, Rosario, Santa Fe, Argentina`,
   )}`;
-
-export const mapsEmbed = (sede: SedeId) =>
-  `https://maps.google.com/maps?q=${encodeURIComponent(
-    `${sedes[sede].direccion}, Rosario, Santa Fe, Argentina`,
-  )}&z=15&output=embed`;
 
 // `horario` es el texto que se ve en la tarjeta de cada clase. El de adultos mayores también aparece en su
 // sección ("Entrenan los martes y jueves…"), así que conviene que empiece por los días.
@@ -67,7 +67,7 @@ export const clases = [
     id: 'infantil',
     titulo: 'Infantil',
     descripcion: 'Para chicos de 8 a 14 años. Aprenden capoeira jugando: movimientos, acrobacias, música y canto.',
-    horario: 'Viernes a las 20 hs y sábados a las 10 hs',
+    horario: 'Viernes de 20 a 21 hs y sábados de 10 a 11 hs',
     sede: 'roca' as SedeId,
     foto: 'clase-infantil',
     fotoAlt: 'Un profesor y una nena entrenando juntos un movimiento de capoeira',
@@ -101,7 +101,7 @@ export const profes = [
   {
     nombre: 'Graduada Vero',
     rol: 'Mutamba Rosario',
-    texto: '',
+    texto: 'Entrena capoeira desde 2008 y en 2019 recibió su corda de graduada.',
     instagram: 'capellovero',
     // foto provisoria, recortada de una foto grupal
     foto: 'vero',

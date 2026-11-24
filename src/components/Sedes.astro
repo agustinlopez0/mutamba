@@ -1,11 +1,20 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Foto from './Foto.astro';
 import Icon from './Icon.astro';
-import { clases, sedes, mapsLink, mapsEmbed } from '../data/site';
+import { clases, sedes, mapsLink } from '../data/site';
 import type { SedeId } from '../data/site';
+
+// Por sede: la foto de la entrada (src/assets/fotos/sede-<id>.jpg) y un mapa (src/assets/mapas/<id>.png),
+// armado con OpenStreetMap y centrado en la dirección (por eso el pin va en el medio).
+// Al tocar el mapa se abre Google Maps, igual que con "Cómo llegar".
+const mapas = import.meta.glob<{ default: ImageMetadata }>('../assets/mapas/*.png', { eager: true });
 
 const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
   ...sedes[id],
   grupos: clases.filter((c) => c.sede === id).map((c) => c.titulo),
+  mapa: mapas[`../assets/mapas/${id}.png`]?.default,
 }));
 ---
 
@@ -13,33 +22,48 @@ const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
   <div class="container">
     <h2 class="section-title" data-reveal>Sedes</h2>
 
-    <div class="sedes__grid">
+    <div class="sedes__lista">
       {
         lista.map((s) => (
           <article class="sede" data-reveal>
-            <div class="sede__head">
-              <div>
-                <h3>{s.direccion}</h3>
-                <p>{s.grupos.join(' · ')}</p>
-              </div>
+            <div class="sede__info">
+              <h3>{s.direccion}</h3>
+              <p class="sede__lugar">
+                En <strong>{s.lugar}</strong>, {s.rubro}
+              </p>
+              <p class="sede__grupos">{s.grupos.join(' · ')}</p>
               <a class="sede__link" href={mapsLink(s.id)} target="_blank" rel="noopener">
                 Cómo llegar
                 <Icon name="arrow" />
               </a>
             </div>
-            <div class="sede__mapa">
-              <a
-                class="sede__ver"
-                href={mapsLink(s.id)}
-                target="_blank"
-                rel="noopener"
-                data-embed={mapsEmbed(s.id)}
-                data-titulo={`Mapa: ${s.direccion}, Rosario`}
-                aria-label={`Ver mapa de ${s.direccion}`}
-              >
-                <Icon name="pin" />
-                <span>Ver mapa</span>
-              </a>
+
+            <div class="sede__media">
+              <figure class="sede__foto">
+                <Foto
+                  nombre={`sede-${s.id}`}
+                  alt={`La entrada de la sede de ${s.direccion}`}
+                  sizes="(max-width: 700px) 85vw, (max-width: 1000px) 45vw, 340px"
+                  widths={[340, 500, 680]}
+                  class="sede__img"
+                />
+                <figcaption class="sede__chip">La entrada</figcaption>
+              </figure>
+              {s.mapa && (
+                <div class="sede__mapa">
+                  {/* Lleva al mismo lugar que "Cómo llegar", que es el link que usan el teclado y los lectores de pantalla. */}
+                  <a class="sede__abrir" href={mapsLink(s.id)} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+                    <Image src={s.mapa} alt="" format="webp" quality={85} class="sede__img" />
+                    <svg class="sede__pin" viewBox="0 0 32 42">
+                      <path d="M16 41s-13-12.2-13-23.5a13 13 0 0 1 26 0C29 28.8 16 41 16 41z" />
+                      <circle cx="16" cy="17.5" r="5" />
+                    </svg>
+                  </a>
+                  <a class="sede__chip sede__osm" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">
+                    © OpenStreetMap
+                  </a>
+                </div>
+              )}
             </div>
           </article>
         ))
@@ -52,40 +76,38 @@ const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
   .sedes {
     background: var(--paper-2);
   }
-  .sedes__grid {
+  .sedes__lista {
     margin-top: 40px;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(28px, 4vw, 48px);
+    gap: clamp(40px, 5vw, 56px);
   }
+  /* compu: los datos a la izquierda; la foto de la entrada y el mapa a la derecha */
   .sede {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px clamp(24px, 4vw, 48px);
     padding-top: 22px;
     border-top: 2px solid var(--ink);
-  }
-  .sede__head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 16px;
   }
   .sede h3 {
     font-size: clamp(1.9rem, 3.2vw, 2.5rem);
   }
-  .sede__head p {
-    margin-top: 6px;
+  .sede__lugar {
+    margin-top: 10px;
+  }
+  .sede__grupos {
+    margin-top: 2px;
     color: var(--ink-2);
   }
   .sede__link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    flex: none;
+    margin-top: 14px;
     padding-block: 8px;
     font-weight: 700;
     color: var(--red-deep);
     text-decoration: none;
-    white-space: nowrap;
   }
   .sede__link :global(svg) {
     width: 18px;
@@ -99,100 +121,111 @@ const lista = (Object.keys(sedes) as SedeId[]).map((id) => ({
   .sede__link:hover :global(svg) {
     transform: translateX(3px);
   }
-  /* Mapa liviano: una cuadrícula de calles con el pin. El mapa de Google se carga solo si lo piden. */
+
+  .sede__media {
+    display: grid;
+    grid-template-columns: repeat(2, clamp(260px, 27vw, 340px));
+    gap: 12px;
+  }
+  .sede__foto,
   .sede__mapa {
     position: relative;
-    margin-top: 18px;
-    aspect-ratio: 4 / 3;
+    margin: 0;
+    aspect-ratio: 1 / 1;
     border-radius: var(--radius-lg);
     overflow: hidden;
-    background-color: #e4dccf;
-    background-image:
-      radial-gradient(circle at 50% 46%, rgb(247 243 236 / 0) 0, rgb(228 220 207 / 0.9) 75%),
-      linear-gradient(90deg, transparent calc(62% - 9px), #fbf8f3 calc(62% - 9px) calc(62% + 9px), transparent 0),
-      repeating-linear-gradient(0deg, #f7f2ea 0 8px, transparent 8px 58px),
-      repeating-linear-gradient(90deg, #f7f2ea 0 8px, transparent 8px 58px);
+    background: #e4dccf;
   }
-  .sede__ver {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-content: center;
-    justify-items: center;
-    gap: 12px;
-    color: var(--ink);
-    text-decoration: none;
+  .sede__foto :global(picture) {
+    display: block;
+    height: 100%;
   }
-  .sede__ver :global(svg) {
-    width: 46px;
-    height: 46px;
-    color: var(--red);
-    filter: drop-shadow(0 4px 6px rgb(20 18 16 / 0.25));
-    transition: transform 0.3s var(--ease-out);
-  }
-  .sede__ver span {
-    padding: 10px 20px;
-    border-radius: 999px;
-    background: #fff;
-    box-shadow: var(--shadow);
-    font-weight: 700;
-    font-size: 0.95rem;
-    transition: transform 0.2s ease;
-  }
-  .sede__ver:hover :global(svg) {
-    transform: translateY(-4px);
-  }
-  .sede__ver:hover span {
-    transform: translateY(-1px);
-  }
-  /* el iframe lo crea el script: necesita :global para recibir estos estilos */
-  .sede__mapa :global(iframe) {
-    position: absolute;
-    inset: 0;
+  .sede__media :global(.sede__img) {
     width: 100%;
     height: 100%;
-    border: 0;
-    opacity: 0;
-    filter: grayscale(0.3);
-    transition: opacity 0.5s ease;
+    object-fit: cover;
   }
-  .sede__mapa.is-listo :global(iframe) {
-    opacity: 1;
+  .sede__abrir {
+    position: absolute;
+    inset: 0;
+  }
+  .sede__abrir :global(.sede__img) {
+    transition: transform 0.6s var(--ease-out);
+  }
+  .sede__abrir:hover :global(.sede__img) {
+    transform: scale(1.03);
+  }
+  /* la punta del pin queda justo en el centro, que es donde está la dirección */
+  .sede__pin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 36px;
+    height: auto;
+    overflow: visible;
+    transform: translate(-50%, -100%);
+    filter: drop-shadow(0 4px 5px rgb(20 18 16 / 0.35));
+    transition: transform 0.3s var(--ease-out);
+  }
+  .sede__abrir:hover .sede__pin {
+    transform: translate(-50%, calc(-100% - 4px));
+  }
+  .sede__pin path {
+    fill: var(--red);
+    stroke: #fff;
+    stroke-width: 2;
+  }
+  .sede__pin circle {
+    fill: #fff;
+  }
+  .sede__chip {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(247 243 236 / 0.88);
+    color: var(--ink-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .sede__osm {
+    left: auto;
+    right: 8px;
+    font-weight: 400;
+    text-decoration: none;
+  }
+  .sede__osm:hover {
+    text-decoration: underline;
   }
 
-  @media (max-width: 700px) {
-    .sedes__grid {
+  /* tablet: los datos arriba y las dos imágenes abajo, una al lado de la otra */
+  @media (max-width: 1000px) {
+    .sede {
       grid-template-columns: minmax(0, 1fr);
     }
-    .sede__mapa {
-      aspect-ratio: 1 / 1;
+    .sede__media {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  /* celular: la foto y el mapa en una tira que se desliza de costado */
+  @media (max-width: 700px) {
+    .sede__media {
+      display: flex;
+      gap: 10px;
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      scrollbar-width: none;
+    }
+    .sede__media::-webkit-scrollbar {
+      display: none;
+    }
+    .sede__media > * {
+      flex: 0 0 85%;
+      scroll-snap-align: start;
     }
   }
 </style>
-
-<script>
-  // Carga el mapa de Google recién cuando alguien toca "Ver mapa" (ahorra datos y no carga cookies de Google antes).
-  document.querySelectorAll<HTMLAnchorElement>('.sede__ver[data-embed]').forEach((boton) => {
-    boton.addEventListener('click', (e) => {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      e.preventDefault();
-      const caja = boton.parentElement!;
-      if (caja.querySelector('iframe')) return;
-      boton.querySelector('span')!.textContent = 'Cargando mapa…';
-      const mapa = document.createElement('iframe');
-      mapa.src = boton.dataset.embed!;
-      mapa.title = boton.dataset.titulo!;
-      mapa.referrerPolicy = 'no-referrer-when-downgrade';
-      mapa.addEventListener(
-        'load',
-        () => {
-          caja.classList.add('is-listo');
-          boton.setAttribute('tabindex', '-1');
-          boton.setAttribute('aria-hidden', 'true');
-        },
-        { once: true },
-      );
-      caja.append(mapa);
-    });
-  });
-</script>
