@@ -27,7 +27,7 @@ Todo el contenido vive en **`src/data/site.ts`**:
 | Teléfono / WhatsApp, Instagram | `contacto` |
 | Mensajes pre-cargados de WhatsApp | `mensajesWhatsApp` |
 | Direcciones | `sedes` |
-| Clases, horarios, textos y foto de cada clase | `clases` (`horario` es el texto que se ve; la `grilla` alimenta los datos estructurados para Google) |
+| Clases, horarios, textos y foto de cada clase | `clases` (`horario` es el texto que se ve; el de adultos mayores también aparece en su sección) |
 | Profes | `profes` (fotos en `src/assets/profes/`, cuadradas; la de Vero es provisoria) |
 | Videos de alumnas (adultos mayores) | `videos` |
 | Encuentro anual (batizado) | `encuentro` |

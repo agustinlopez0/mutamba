@@ -5,7 +5,7 @@
 export const contacto = {
   // (0341) 15 570-8406 → formato internacional para WhatsApp
   whatsapp: '5493415708406',
-  telefonoVisible: '341 570-8406',
+  telefonoVisible: '+54 9 341 570-8406',
   instagram: 'mutambacapoeirarosario',
   instagramGrupo: 'capoeira_mutamba',
   webGrupo: 'https://www.capoeiramutamba.com/',
@@ -49,9 +49,8 @@ export const mapsEmbed = (sede: SedeId) =>
     `${sedes[sede].direccion}, Rosario, Santa Fe, Argentina`,
   )}&z=15&output=embed`;
 
-// `horario` es el texto que se ve en la web.
-// `grilla` (dia: 0 = lunes … 5 = sábado) se usa para los datos estructurados que lee Google.
-// (  = espacio que no corta: evita que "hs" quede solo en un renglón)
+// `horario` es el texto que se ve en la tarjeta de cada clase. El de adultos mayores también aparece en su
+// sección ("Entrenan los martes y jueves…"), así que conviene que empiece por los días.
 export const clases = [
   {
     id: 'adultos',
@@ -59,11 +58,6 @@ export const clases = [
     descripcion:
       'Entrenamos ginga, patadas, esquivas y acrobacias, paso a paso. También aprendemos a tocar el berimbau y el pandeiro, y a cantar. Se puede empezar sin experiencia.',
     horario: 'Lunes, miércoles y viernes, de 20 a 21 hs',
-    grilla: [
-      { dia: 0, hora: '20:00' },
-      { dia: 2, hora: '20:00' },
-      { dia: 4, hora: '20:00' },
-    ],
     sede: 'roca' as SedeId,
     foto: 'clase-adultos',
     fotoAlt: 'Dos capoeiristas jugando en la roda mientras el grupo toca y canta alrededor',
@@ -74,10 +68,6 @@ export const clases = [
     titulo: 'Infantil',
     descripcion: 'Para chicos de 8 a 14 años. Aprenden capoeira jugando: movimientos, acrobacias, música y canto.',
     horario: 'Viernes a las 20 hs y sábados a las 10 hs',
-    grilla: [
-      { dia: 4, hora: '20:00' },
-      { dia: 5, hora: '10:00' },
-    ],
     sede: 'roca' as SedeId,
     foto: 'clase-infantil',
     fotoAlt: 'Un profesor y una nena entrenando juntos un movimiento de capoeira',
@@ -89,16 +79,16 @@ export const clases = [
     descripcion:
       'Capoeira adaptada. Trabajamos movilidad, equilibrio y coordinación, y también tocamos instrumentos y cantamos.',
     horario: 'Martes y jueves a las 11 hs',
-    grilla: [
-      { dia: 1, hora: '11:00' },
-      { dia: 3, hora: '11:00' },
-    ],
     sede: 'mendoza' as SedeId,
     foto: 'clase-adultos-mayores',
     fotoAlt: 'Una alumna del grupo de adultos mayores abrazada a su profesor',
     whatsapp: 'mayores' as MensajeKey,
   },
 ] as const;
+
+// Que una hora no se corte entre renglones: "de 20 a 21 hs", "a las 10 hs".
+export const sinCortes = (texto: string) =>
+  texto.replace(/(?:de|a las) \d+(?: a \d+)? hs/g, (hora) => hora.replaceAll(' ', ' '));
 
 export const profes = [
   {

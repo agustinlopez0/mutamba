@@ -1,7 +1,12 @@
 ---
 import Foto from './Foto.astro';
 import Icon from './Icon.astro';
-import { sedes, videos } from '../data/site';
+import { clases, sedes, sinCortes, videos } from '../data/site';
+
+// El horario y la sede salen de la clase de adultos mayores, así este texto no queda distinto de la tarjeta.
+const mayores = clases.find((c) => c.id === 'mayores');
+if (!mayores) throw new Error('Falta la clase de adultos mayores (id "mayores") en src/data/site.ts');
+const cuando = mayores.horario.charAt(0).toLowerCase() + mayores.horario.slice(1);
 ---
 
 <section class="section mayores" id="adultos-mayores">
@@ -18,8 +23,8 @@ import { sedes, videos } from '../data/site';
     <div class="mayores__texto" data-reveal>
       <h2 class="section-title">El grupo de adultos mayores</h2>
       <p>
-        Entrenan los martes y jueves a las 11 en {sedes.mendoza.direccion}. En Instagram subimos algunos videos de las
-        alumnas. Esther tiene 90 años: marca el ritmo con el pandeiro y después entra a jugar.
+        Entrenan los {sinCortes(cuando)} en {sedes[mayores.sede].direccion}. En Instagram subimos algunos videos de
+        las alumnas. Esther tiene 90 años: marca el ritmo con el pandeiro y después entra a jugar.
       </p>
 
       <ul class="mayores__videos">

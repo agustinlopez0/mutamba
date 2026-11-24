@@ -1,11 +1,7 @@
 ---
 import Foto from './Foto.astro';
 import Icon from './Icon.astro';
-import { clases, sedes, waLink, mapsLink } from '../data/site';
-
-// Que una hora no se corte entre renglones: "de 20 a 21 hs", "a las 10 hs".
-const sinCortes = (texto: string) =>
-  texto.replace(/(?:de|a las) \d+(?: a \d+)? hs/g, (hora) => hora.replaceAll(' ', '\u00a0'));
+import { clases, sedes, sinCortes, waLink, mapsLink } from '../data/site';
 ---
 
 <section class="section clases" id="clases">
@@ -99,6 +95,17 @@ const sinCortes = (texto: string) =>
     width: 17px;
     height: 17px;
     color: var(--red);
+  }
+  /* área de toque más alta en el celular, sin cambiar el diseño */
+  .clase__sede,
+  .clase__wa {
+    position: relative;
+  }
+  .clase__sede::before,
+  .clase__wa::before {
+    content: '';
+    position: absolute;
+    inset: -9px -4px;
   }
   .clase__desc {
     margin-top: 16px;

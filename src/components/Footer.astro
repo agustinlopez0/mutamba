@@ -84,9 +84,12 @@ const year = new Date().getFullYear();
   .footer ul {
     list-style: none;
     padding: 0;
-    margin: 14px 0 0;
+    margin: 5px 0 0;
     display: grid;
-    gap: 10px;
+  }
+  /* links altos para tocarlos fácil en el celular (el padding reemplaza el espacio entre renglones) */
+  .footer ul a {
+    padding-block: 9px;
   }
   .footer a {
     display: inline-flex;

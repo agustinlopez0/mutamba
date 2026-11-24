@@ -11,8 +11,9 @@
   --red: #e0281b;
   --red-deep: #b5180d;
   --night: #121010;
-  --wa: #15803d;
-  --wa-hover: #11733a;
+  --wa: #25d366; /* el verde de WhatsApp */
+  --wa-hover: #1ebe5d;
+  --wa-letra: #111b21; /* letra sobre el verde: en blanco no se lee bien (como en whatsapp.com) */
   --wa-texto: #136f37; /* verde para texto sobre fondos claros */
 
   --font-display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
@@ -159,6 +160,7 @@ p {
 
 .btn--wa {
   --btn-bg: var(--wa);
+  --btn-fg: var(--wa-letra);
 }
 .btn--wa:hover {
   --btn-bg: var(--wa-hover);
