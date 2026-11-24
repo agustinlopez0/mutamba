@@ -146,7 +146,6 @@ export const encuentro = {
     { nombre: 'Contramestre Malicia', grupo: 'Beribazu' },
     { nombre: 'Contramestre Emanuel', grupo: 'Projete Liberdade' },
     { nombre: 'Contramestre Grosso', grupo: 'Mutamba Buenos Aires' },
-    { nombre: 'Professor Keke', grupo: 'Capoeira Brasil' },
     { nombre: 'Professor Queixada', grupo: 'Ganga Zumbi' },
     { nombre: 'Instrutor Carneiro', grupo: 'Mutamba Buenos Aires' },
   ],

@@ -1,7 +1,9 @@
 ---
-// El 404 con el cero hecho capoeirista: tiene el cordón atado a la cintura, hace la ginga y cada tanto
+// El 404 con el cero hecho capoeirista: tiene la corda atada a la cintura, hace la ginga y cada tanto
 // se tira un aú (la medialuna de la capoeira). Los cuatros se corren para dejarle lugar.
 // Al tocar el dibujo, el cero salta enseguida.
+import Corda from './Corda.astro';
+
 const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 H26 Z';
 ---
 
@@ -9,7 +11,7 @@ const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 
   class="au"
   viewBox="0 0 360 310"
   role="img"
-  aria-label="Un 404 en el que el cero, con un cordón de capoeira en la cintura, hace un aú"
+  aria-label="Un 404 en el que el cero, con una corda de capoeira atada a la cintura, hace un aú"
   data-au
 >
   <path class="au__piso" d="M14 300.5 H346"></path>
@@ -46,15 +48,7 @@ const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 
         <g class="au__mueve au__desde-los-pies" data-estiro>
           <g class="au__mueve" data-giro>
             <rect class="au__cero" x="-32" y="-61" width="64" height="122" rx="30"></rect>
-            <g class="au__cordon">
-              <rect x="-48" y="7" width="32" height="10" rx="3"></rect>
-              <rect x="16" y="7" width="32" height="10" rx="3"></rect>
-              <g class="au__mueve au__puntas" data-puntas>
-                <path d="M-34 15 C-37 24 -38 31 -36 40"></path>
-                <path d="M-30 15 C-27 23 -25 29 -26 37"></path>
-              </g>
-              <circle cx="-32" cy="12" r="6.5"></circle>
-            </g>
+            <Corda />
           </g>
         </g>
       </g>
@@ -89,16 +83,6 @@ const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 
     fill: none;
     stroke: #fff;
     stroke-width: 28;
-  }
-  .au__cordon {
-    fill: var(--red);
-  }
-  .au__puntas {
-    fill: none;
-    stroke: var(--red);
-    stroke-width: 5;
-    stroke-linecap: round;
-    transform-origin: -32px 12px;
   }
   .au__polvo circle {
     fill: rgb(239 232 220 / 0.5);
@@ -137,12 +121,13 @@ const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 
     const todos = (selector: string) => [...svg.querySelectorAll<SVGElement>(selector)];
 
     const ginga = uno('[data-ginga]');
-    let vaiven: Animation | undefined;
+    const puntas = todos('[data-punta]').map((el) => ({ el, peso: Number(el.dataset.punta) }));
+    let vaiven: (Animation | undefined)[] = [];
     let enElAire = false;
     let espera = 0;
 
     const hacerGinga = () => {
-      vaiven = ginga?.animate(
+      const cuerpo = ginga?.animate(
         [
           { transform: 'translateX(0) rotate(0deg)', easing: 'ease-in-out' },
           { transform: 'translateX(-3px) rotate(-3deg)', easing: 'ease-in-out' },
@@ -152,6 +137,14 @@ const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 
         ],
         { duration: VAIVEN, iterations: Infinity },
       );
+      // las puntas de la corda se balancean al revés que el cuerpo
+      const balanceo = puntas.map(({ el, peso }) =>
+        el.animate(
+          [0, 6, 0, -6, 0].map((grados) => ({ transform: `rotate(${grados * peso}deg)`, easing: 'ease-in-out' })),
+          { duration: VAIVEN, iterations: Infinity },
+        ),
+      );
+      vaiven = [cuerpo, ...balanceo];
     };
 
     // Los cuatros se inclinan hacia afuera mientras el cero está en el aire y vuelven con un rebote.
@@ -169,7 +162,7 @@ const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 
       if (enElAire || reducir.matches) return;
       enElAire = true;
       window.clearTimeout(espera);
-      vaiven?.cancel();
+      vaiven.forEach((v) => v?.cancel());
 
       const animaciones = [
         uno('[data-salto]')?.animate(
@@ -205,14 +198,16 @@ const cuatro = 'M38 0 H80 V100 H92 V124 H80 V150 H52 V124 H0 V100 Z M52 32 V100 
           ],
           DURACION,
         ),
-        // las puntas del cordón siguen el movimiento con un poco de retraso
-        uno('[data-puntas]')?.animate(
-          [0, 0, 28, -18, 22, -12, 8, -3, 0].map((grados, i) => ({
-            offset: [0, 0.2, 0.3, 0.45, 0.6, 0.75, 0.86, 0.94, 1][i],
-            transform: `rotate(${grados}deg)`,
-            easing: 'ease-in-out',
-          })),
-          DURACION,
+        // las puntas de la corda siguen el movimiento con un poco de retraso; la corta, más tarde
+        ...puntas.map(({ el, peso }) =>
+          el.animate(
+            [0, 0, 24, -18, 20, -12, 8, -3, 0].map((grados, i) => ({
+              offset: [0, 0.2, 0.3, 0.45, 0.6, 0.75, 0.86, 0.94, 1][i],
+              transform: `rotate(${grados * peso}deg)`,
+              easing: 'ease-in-out',
+            })),
+            { duration: DURACION + (1 - peso) * 400 },
+          ),
         ),
         uno('[data-estela]')?.animate(
           [
