@@ -1,8 +1,8 @@
 ---
 import '../styles/global.css';
 import { getImage } from 'astro:assets';
-import ogSrc from '../assets/fotos/grupo-batizado-2026.jpg';
-import { clases, contacto, igLink, sedes } from '../data/site';
+import ogSrc from '../assets/og/og-mutamba.jpg';
+import { clases, contacto, encuentro, igLink, sedes } from '../data/site';
 
 interface Props {
   title: string;
@@ -11,44 +11,108 @@ interface Props {
 
 const { title, description } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const og = await getImage({ src: ogSrc, width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 80 });
-const ogUrl = new URL(og.src, Astro.site);
+const absoluta = (ruta: string) => new URL(ruta, Astro.site).href;
 
-const dias = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const sumarHora = (h: string) => {
-  const [hh, mm] = h.split(':').map(Number);
-  return `${String(hh + 1).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+// Imagen que aparece al compartir el link (WhatsApp, Instagram, Facebook, X).
+// Se genera a partir de src/assets/og/og-mutamba.jpg (1200×630).
+const og = await getImage({ src: ogSrc, width: 1200, height: 630, format: 'jpg', quality: 85 });
+const ogUrl = absoluta(og.src);
+const ogAlt = 'Capoeira en Rosario: clases de Mutamba Capoeira Rosario para chicos, adultos y adultos mayores';
+
+// Datos estructurados (schema.org) que lee Google.
+const escuelaId = `${canonical.href}#escuela`;
+const telefono = `+${contacto.whatsapp}`;
+const publico: Record<string, string> = {
+  adultos: 'adultos',
+  infantil: 'chicos de 8 a 14 años',
+  mayores: 'adultos mayores',
 };
+
+const lugares = Object.values(sedes).map((sede) => ({
+  '@type': 'SportsActivityLocation',
+  '@id': `${canonical.href}#sede-${sede.id}`,
+  name: `Mutamba Capoeira Rosario · ${sede.direccion}`,
+  description: `Clases de capoeira para ${clases
+    .filter((c) => c.sede === sede.id)
+    .map((c) => publico[c.id])
+    .join(' y ')}.`,
+  url: canonical.href,
+  telephone: telefono,
+  image: ogUrl,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: sede.direccion,
+    addressLocality: 'Rosario',
+    addressRegion: 'Santa Fe',
+    postalCode: 'S2000',
+    addressCountry: 'AR',
+  },
+  parentOrganization: { '@id': escuelaId },
+}));
+
+const escuela = {
+  '@type': 'SportsOrganization',
+  '@id': escuelaId,
+  name: 'Mutamba Capoeira Rosario',
+  alternateName: ['Capoeira Mutamba Rosario', 'Mutamba Rosario'],
+  description: 'Escuela de capoeira en Rosario. Clases para chicos de 8 a 14 años, adultos y adultos mayores.',
+  sport: 'Capoeira',
+  url: canonical.href,
+  logo: absoluta('/logo-mutamba.png'),
+  image: ogUrl,
+  telephone: telefono,
+  sameAs: [igLink()],
+  areaServed: { '@type': 'City', name: 'Rosario' },
+  location: lugares.map((l) => ({ '@id': l['@id'] })),
+  parentOrganization: {
+    '@type': 'SportsOrganization',
+    name: 'Capoeira Mutamba',
+    url: contacto.webGrupo,
+    sameAs: [igLink(contacto.instagramGrupo)],
+  },
+};
+
+const sitio = {
+  '@type': 'WebSite',
+  '@id': `${canonical.href}#sitio`,
+  url: canonical.href,
+  name: 'Mutamba Capoeira Rosario',
+  alternateName: 'Capoeira Mutamba Rosario',
+  inLanguage: 'es-AR',
+  publisher: { '@id': escuelaId },
+};
+
+// El encuentro anual solo se publica como evento cuando hay una próxima edición con fecha.
+const evento =
+  encuentro.estado === 'proximo'
+    ? {
+        '@type': 'Event',
+        name: `${encuentro.nombre} ${encuentro.edicion}`,
+        description: 'Encuentro anual de Mutamba Capoeira Rosario: talleres, rodas abiertas, batizado y troca de cordas.',
+        startDate: encuentro.inicio,
+        endDate: encuentro.fin,
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+          '@type': 'Place',
+          name: encuentro.lugar,
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: encuentro.lugar.split(',')[0],
+            addressLocality: 'Rosario',
+            addressRegion: 'Santa Fe',
+            addressCountry: 'AR',
+          },
+        },
+        image: ogUrl,
+        url: `${canonical.href}#encuentro`,
+        organizer: { '@id': escuelaId },
+      }
+    : null;
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@graph': Object.values(sedes).map((sede) => ({
-    '@type': 'SportsActivityLocation',
-    '@id': `${canonical.href}#sede-${sede.id}`,
-    name: `Mutamba Capoeira Rosario – ${sede.direccion}`,
-    description: 'Clases de capoeira para chicos, adultos y adultos mayores en Rosario.',
-    url: canonical.href,
-    telephone: `+${contacto.whatsapp}`,
-    image: ogUrl.href,
-    sameAs: [igLink()],
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: sede.direccion,
-      addressLocality: 'Rosario',
-      addressRegion: 'Santa Fe',
-      addressCountry: 'AR',
-    },
-    openingHoursSpecification: clases
-      .filter((c) => c.sede === sede.id)
-      .flatMap((c) =>
-        c.grilla.map((g) => ({
-          '@type': 'OpeningHoursSpecification',
-          dayOfWeek: dias[g.dia],
-          opens: g.hora,
-          closes: sumarHora(g.hora),
-        })),
-      ),
-  })),
+  '@graph': [sitio, escuela, ...lugares, ...(evento ? [evento] : [])],
 };
 ---
 
@@ -60,11 +124,19 @@ const jsonLd = {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#141210" />
+    <meta name="application-name" content="Mutamba" />
+    <meta name="apple-mobile-web-app-title" content="Mutamba" />
+    <meta name="format-detection" content="telephone=no" />
 
+    <!-- Vista previa al compartir el link -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_AR" />
     <meta property="og:site_name" content="Mutamba Capoeira Rosario" />
@@ -72,10 +144,16 @@ const jsonLd = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogUrl} />
+    <meta property="og:image:secure_url" content={ogUrl} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="El grupo Mutamba Capoeira Rosario después del batizado 2026" />
+    <meta property="og:image:alt" content={ogAlt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogUrl} />
+    <meta name="twitter:image:alt" content={ogAlt} />
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script is:inline>document.documentElement.classList.add('js');</script>

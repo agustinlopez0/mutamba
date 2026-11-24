@@ -41,9 +41,9 @@ Todo el contenido vive en **`src/data/site.ts`**:
 - `'pasado'` (actual): la última edición (programa, invitados, galería) + "la fecha la vamos a publicar en Instagram".
 - `'proximo'`: misma estructura, pero con botón de inscripción (`encuentro.inscripcion`, link al Google Form).
 
-Cuando se anuncie la próxima edición: actualizar `nombre` (cada año cambia), `edicion`, `fechas`, `lugar`,
-`invitados`, `programa`, `inscripcion` y pasar `estado` a `'proximo'`. Las fotos de la galería se cambian en
-`src/components/Encuentro.astro`.
+Cuando se anuncie la próxima edición: actualizar `nombre` (cada año cambia), `edicion`, `fechas`, `inicio` y `fin`
+(las mismas fechas en formato estándar, para que Google muestre el evento), `lugar`, `invitados`, `programa`,
+`inscripcion` y pasar `estado` a `'proximo'`. Las fotos de la galería se cambian en `src/components/Encuentro.astro`.
 
 ### Fotos
 
@@ -60,5 +60,16 @@ pasa el archivo vectorial original, reemplazar estos dos archivos.
 ### Favicon
 
 `public/favicon.svg` (un berimbau), con `favicon.ico` y `apple-touch-icon.png` como respaldo para navegadores viejos y
-para el ícono del iPhone. Si se cambia el SVG, hay que regenerar los otros dos.
+para el ícono del iPhone. Si se cambia el SVG, hay que regenerar los otros dos. `icon-192.png`, `icon-512.png` y
+`site.webmanifest` son para cuando alguien agrega la web a la pantalla de inicio en Android.
+
+### SEO y vista previa al compartir
+
+- `/sitemap.xml` y `/robots.txt` se generan solos con la URL del sitio (`SITE_URL` o el dominio de producción de Vercel).
+- Los datos estructurados para Google están en `src/layouts/Base.astro`: la escuela, las dos sedes y las preguntas
+  frecuentes. Con `encuentro.estado = 'proximo'` también se publica el evento.
+- La imagen que aparece al compartir el link es `src/assets/og/og-mutamba.jpg` (1200×630). WhatsApp y Facebook guardan
+  la vista previa un tiempo; para forzar que tomen una nueva: https://developers.facebook.com/tools/debug/
+- `public/logo-mutamba.png` es el logo que Google puede mostrar junto a la escuela.
+- Después de publicar: dar de alta el sitio en Google Search Console y enviar el sitemap.
 # mutamba

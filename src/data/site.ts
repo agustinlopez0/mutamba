@@ -145,6 +145,9 @@ export const encuentro = {
   nombre: 'Ginga Capoeira',
   edicion: 2026,
   fechas: '13 y 14 de noviembre',
+  // Las mismas fechas en formato estándar, para Google (inicio con hora de Argentina).
+  inicio: '2026-11-13T19:00:00-03:00',
+  fin: '2026-11-14',
   lugar: 'Mendoza 4357, Rosario',
   inscripcion: 'https://forms.gle/d74nxBRqDtUEL5Km9',
   invitados: [
